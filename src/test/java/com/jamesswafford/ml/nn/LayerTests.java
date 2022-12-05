@@ -1,11 +1,14 @@
 package com.jamesswafford.ml.nn;
 
+import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class LayerTests {
 
@@ -29,8 +32,9 @@ public class LayerTests {
     }
 
     @Test
-    public void linearForwardSingleUnit() {
-        Layer layer = new Layer(1, new Identity());
+    public void forwardSingleUnit() {
+        ActivationFunction activationFunction = Mockito.mock(ActivationFunction.class);
+        Layer layer = new Layer(1, activationFunction);
         layer.initialize(1);
         layer.setWeight(0, 0, 0.1);
         layer.setBias(0, 0.05);
@@ -42,11 +46,15 @@ public class LayerTests {
         assertEquals(1, Z.numRows());
         assertEquals(1, Z.numCols());
         assertEquals(0.1, Z.get(0, 0));
+
+        layer.activationForward(X);
+        verify(activationFunction, times(1)).a(0.1);
     }
 
     @Test
-    public void linearForward1x3() {
-        Layer layer = new Layer(3, new Identity());
+    public void forward1x3() {
+        ActivationFunction activationFunction = Mockito.mock(ActivationFunction.class);
+        Layer layer = new Layer(3, activationFunction);
         layer.initialize(1);
         layer.setWeight(0, 0, 0.1);
         layer.setBias(0, 0.05);
@@ -64,11 +72,17 @@ public class LayerTests {
         assertEquals(0.25, Z.get(0, 0));
         assertEquals(0.45, Z.get(1, 0));
         assertEquals(0.65, Z.get(2, 0));
+
+        layer.activationForward(X);
+        verify(activationFunction, times(1)).a(0.25);
+        verify(activationFunction, times(1)).a(0.45);
+        verify(activationFunction, times(1)).a(0.65);
     }
 
     @Test
-    public void linearForward3x4() {
-        Layer layer = new Layer(4, new Identity());
+    public void forward3x4() {
+        ActivationFunction activationFunction = Mockito.mock(ActivationFunction.class);
+        Layer layer = new Layer(4, activationFunction);
         layer.initialize(3);
 
         // unit 1 weights
@@ -109,4 +123,5 @@ public class LayerTests {
         assertDoubleEquals(0.29, Z.get(2, 0));
         assertDoubleEquals(0.105, Z.get(3, 0));
     }
+
 }

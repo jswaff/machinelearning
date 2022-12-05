@@ -44,14 +44,16 @@ public class Layer {
         b.set(unit, 0, val);
     }
 
-    public SimpleMatrix linearForward(SimpleMatrix A) {
-        return w.mult(A).plus(b);
+    public SimpleMatrix linearForward(SimpleMatrix prevA) {
+        return w.mult(prevA).plus(b);
     }
 
     public SimpleMatrix activationForward(SimpleMatrix prevA) {
         SimpleMatrix Z = linearForward(prevA);
-        SimpleMatrix A = new SimpleMatrix(Z);
-        // TODO - apply activation function
+        SimpleMatrix A = new SimpleMatrix(Z.numRows(), 1);
+        for (int r=0;r<A.numRows();r++) {
+            A.set(r, 0, activationFunction.a(Z.get(r, 0)));
+        }
         return A;
     }
 }
