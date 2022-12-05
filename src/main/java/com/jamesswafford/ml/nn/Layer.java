@@ -32,20 +32,26 @@ public class Layer {
         return w.get(unit, prevUnit);
     }
 
+    public void setWeight(int unit, int prevUnit, Double val) {
+        w.set(unit, prevUnit, val);
+    }
+
     public Double getBias(int unit) {
         return b.get(unit, 0);
     }
 
-    public SimpleMatrix linearForward(SimpleMatrix A) {
-        SimpleMatrix Z = new SimpleMatrix(A);
-        //TODO Z = np.dot(W, A) + b
-        return Z;
+    public void setBias(int unit, Double val) {
+        b.set(unit, 0, val);
     }
 
-    public SimpleMatrix activationForward(SimpleMatrix A) {
-        SimpleMatrix Z = linearForward(A);
-        SimpleMatrix myA = new SimpleMatrix(Z);
+    public SimpleMatrix linearForward(SimpleMatrix A) {
+        return w.mult(A).plus(b);
+    }
+
+    public SimpleMatrix activationForward(SimpleMatrix prevA) {
+        SimpleMatrix Z = linearForward(prevA);
+        SimpleMatrix A = new SimpleMatrix(Z);
         // TODO - apply activation function
-        return myA;
+        return A;
     }
 }
