@@ -34,24 +34,20 @@ public class Network {
      * examples and n is the number of features.  The shape of Y should be m x 1.
      */
     public void train(SimpleMatrix X, SimpleMatrix Y) {
+
         // TODO: - number of epochs, minibatches
+
         SimpleMatrix prevA = X;
-        SimpleMatrix A_out;
+        SimpleMatrix A = X;
         for (Layer layer : layers) {
-            A_out = layer.activationForward(prevA);
-            prevA = A_out;
+            A = layer.activationForward(prevA);
+            prevA = A;
         }
 
-        // TODO - cost
+        double cost = costFunction.totalCost(A, Y);
+        System.out.println("cost: " + cost);
 
         // TODO - backprop
     }
-
-
-    // TODO - cost (AL, Y)
-    // AL - activation for layer L, shape (1, number of examples)
-    // Y - shape (1, number of examples)
-    // returns -- cost
-
 
 }
