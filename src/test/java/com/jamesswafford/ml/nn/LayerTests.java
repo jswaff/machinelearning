@@ -124,7 +124,8 @@ public class LayerTests {
         assertDoubleEquals(0.105*2, A.get(3, 0));
 
         // backprop
-        SimpleMatrix dA_l = new SimpleMatrix(4, 1, true, new double[] { 0, 1, 2, 3 }); // completely contrived
+        SimpleMatrix dA_l = new SimpleMatrix(4, 1, true,
+                new double[] { 0, 1, 2, 3 }); // completely contrived
         Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z, X);
 
         // the gradients for the previous layer should be a 3x1 row vector
@@ -191,6 +192,7 @@ public class LayerTests {
         assertDoubleEquals(0.36*2, A.get(1, 0));
         assertDoubleEquals(0.51*2, A.get(2, 0));
         assertDoubleEquals(0.07*2, A.get(3, 0));
+
     }
 
     @Test
@@ -240,6 +242,32 @@ public class LayerTests {
         assertDoubleEquals(0.51*2, A.get(2, 1));
         assertDoubleEquals(0.07*2, A.get(3, 1));
 
+        // backprop
+        SimpleMatrix dA_l = new SimpleMatrix(4, 2, false,
+                new double[] { 0, 1, 2, 3, 0, 1, 2, 3 }); // completely contrived
+        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z, X);
+
+        // the gradients for the previous layer -- num units prev layer x m
+        SimpleMatrix dA = dA_dW_db.getValue0();
+        assertEquals(3, dA.numRows());
+        assertEquals(2, dA.numCols());
+
+        assertDoubleEquals(7.5, dA.get(0, 0));
+        assertDoubleEquals(4.2, dA.get(1, 0));
+        assertDoubleEquals(2.5, dA.get(2, 0));
+        assertDoubleEquals(7.5, dA.get(0, 1));
+        assertDoubleEquals(4.2, dA.get(1, 1));
+        assertDoubleEquals(2.5, dA.get(2, 1));
+
+        // the delta weights should be the same shape as the weights matrix
+        SimpleMatrix dW = dA_dW_db.getValue1();
+        assertEquals(4, dW.numRows());
+        assertEquals(3, dW.numCols());
+
+        // db should be the same as dZ
+        SimpleMatrix db = dA_dW_db.getValue2();
+        assertEquals(4, db.numRows());
+        assertEquals(2, db.numCols());
     }
 
     @Test
