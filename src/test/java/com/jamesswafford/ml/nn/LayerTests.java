@@ -3,6 +3,7 @@ package com.jamesswafford.ml.nn;
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import org.ejml.simple.SimpleMatrix;
+import org.javatuples.Pair;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -111,7 +112,9 @@ public class LayerTests {
         assertDoubleEquals(0.29, Z.get(2, 0));
         assertDoubleEquals(0.105, Z.get(3, 0));
 
-        SimpleMatrix A = layer.activationForward(X);
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(X);
+        assertMatrixEquals(Z, Z_A.getValue0());
+        SimpleMatrix A = Z_A.getValue1();
         assertEquals(4, A.numRows());
         assertEquals(1, A.numCols());
         assertDoubleEquals(0.17*2, A.get(0, 0));
@@ -142,7 +145,9 @@ public class LayerTests {
         assertDoubleEquals(0.51, Z.get(2, 0));
         assertDoubleEquals(0.07, Z.get(3, 0));
 
-        SimpleMatrix A = layer.activationForward(X);
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(X);
+        assertMatrixEquals(Z, Z_A.getValue0());
+        SimpleMatrix A = Z_A.getValue1();
         assertEquals(4, A.numRows());
         assertEquals(1, A.numCols());
         assertDoubleEquals(0.22*2, A.get(0, 0));
@@ -183,7 +188,9 @@ public class LayerTests {
         assertDoubleEquals(0.51, Z.get(2, 1));
         assertDoubleEquals(0.07, Z.get(3, 1));
 
-        SimpleMatrix A = layer.activationForward(X);
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(X);
+        assertMatrixEquals(Z, Z_A.getValue0());
+        SimpleMatrix A = Z_A.getValue1();
         assertEquals(4, A.numRows());
         assertEquals(2, A.numCols());
         assertDoubleEquals(0.17*2, A.get(0, 0));

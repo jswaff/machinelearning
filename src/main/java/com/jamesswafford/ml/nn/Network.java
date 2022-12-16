@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +52,8 @@ public class Network {
             // feed forward
             SimpleMatrix A = X;
             for (Layer layer : layers) {
-                A = layer.activationForward(A);
+                Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(A);
+                A = Z_A.getValue1();
                 // TODO: cache Z,A per layer
             }
 

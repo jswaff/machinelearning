@@ -4,6 +4,8 @@ import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 @RequiredArgsConstructor
 public class Layer {
@@ -77,11 +79,11 @@ public class Layer {
      * @param prevA the activations column vector from the previous layer, of shape l_prev x m, where l_prev is the
      *              number of units in the previous layer, and m is the number of training examples.
      *
-     * @return the A matrix containing activations of the feed forward pass, of shape l x m,
-     *              where l is the number of units in this layer, and m is the number of training examples.
+     * @return the Z, A matrices containing the linear computation and activations of the feed forward pass.
+     *         Each matrix has shape l x m, where l is the number of units in this layer, and m is the number of
+     *         training examples.
      */
-    // TODO - return <Z, A>
-    public SimpleMatrix activationForward(SimpleMatrix prevA) {
+    public Pair<SimpleMatrix, SimpleMatrix> activationForward(SimpleMatrix prevA) {
         SimpleMatrix Z = linearForward(prevA);
         SimpleMatrix A = new SimpleMatrix(Z.numRows(), Z.numCols());
         for (int r=0;r<A.numRows();r++) {
@@ -89,7 +91,7 @@ public class Layer {
                 A.set(r, c, activationFunction.a(Z.get(r, c)));
             }
         }
-        return A;
+        return new Pair<>(Z, A);
     }
 
     /**
@@ -98,11 +100,10 @@ public class Layer {
      *
      * @param dZ the gradients from the next layer.
      *
-     * @return the gradients for this layer
+     * @return the gradients dZ, dW, db for this layer
      */
-    // TODO: return dZ, dW, db
-    public SimpleMatrix backProp(SimpleMatrix dZ) {
-        return dZ;
+    public Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix dZ) {
+        return new Triplet<>(dZ, dZ, dZ);
     }
 
     public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
