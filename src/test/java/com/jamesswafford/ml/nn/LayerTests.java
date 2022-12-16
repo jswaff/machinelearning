@@ -4,6 +4,7 @@ import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -93,7 +94,7 @@ public class LayerTests {
     };
 
     @Test
-    public void forward3x4_x1() {
+    public void forwardAndBack_3x4_example1() {
         Layer layer = build3x4Layer(aFunc);
 
         // input a column vector (one row per unit from previous layer)
@@ -121,6 +122,42 @@ public class LayerTests {
         assertDoubleEquals(0.16*2, A.get(1, 0));
         assertDoubleEquals(0.29*2, A.get(2, 0));
         assertDoubleEquals(0.105*2, A.get(3, 0));
+
+        // backprop
+        SimpleMatrix dA_l = new SimpleMatrix(4, 1, true, new double[] { 0, 1, 2, 3 }); // completely contrived
+        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z, X);
+
+        // the gradients for the previous layer should be a 3x1 row vector
+        SimpleMatrix dA = dA_dW_db.getValue0();
+        assertEquals(3, dA.numRows());
+        assertEquals(1, dA.numCols());
+
+        assertDoubleEquals(7.5, dA.get(0, 0));
+        assertDoubleEquals(4.2, dA.get(1, 0));
+        assertDoubleEquals(2.5, dA.get(2, 0));
+
+        // the delta weights should be the same shape as the weights matrix
+        SimpleMatrix dW = dA_dW_db.getValue1();
+        assertEquals(4, dW.numRows());
+        assertEquals(3, dW.numCols());
+        // dZ = dA_1 doubled, since the derivative of the activation function is always 2
+        //    = [ 0 2 4 6 ]  (col vector  4 x 1)
+        // A_prev.T = X.T = [ .1, .3, -.2 ]  (row vector 1 x 3)
+        /* dW = dZ * A_prev.T
+         0           0           0
+        .2          .6         -.4
+        .4          1.2        -.8
+        .6          1.8        -1.2
+        */
+        assertDoubleEquals(0.6, dW.get(1, 1));
+        assertDoubleEquals(-1.2, dW.get(3, 2));
+
+        // db should be the same as dZ
+        SimpleMatrix db = dA_dW_db.getValue2();
+        assertEquals(4, db.numRows());
+        assertEquals(1, db.numCols());
+        assertDoubleEquals(2, db.get(1, 0));
+        assertDoubleEquals(6, db.get(3, 0));
     }
 
     @Test

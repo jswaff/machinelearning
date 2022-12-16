@@ -7,6 +7,8 @@ import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+import java.util.Random;
+
 @RequiredArgsConstructor
 public class Layer {
 
@@ -25,10 +27,15 @@ public class Layer {
      * @param numUnitsPreviousLayer the number of units in the previous layer
      */
     public void initialize(int numUnitsPreviousLayer) {
+        initialize(numUnitsPreviousLayer, 0);
+    }
+
+    public void initialize(int numUnitsPreviousLayer, long seed) {
+        Random rand = new Random(seed);
         w = new SimpleMatrix(numUnits, numUnitsPreviousLayer);
         for (int r=0;r<numUnits;r++) {
             for (int c=0;c<numUnitsPreviousLayer;c++) {
-                w.set(r, c, Math.random());
+                w.set(r, c, rand.nextDouble());
             }
         }
         b = new SimpleMatrix(numUnits, 1);
@@ -76,15 +83,15 @@ public class Layer {
     /**
      * Compute the output (activation) of the forward pass.
      *
-     * @param prevA the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
+     * @param A_prev the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
      *              number of units in the previous layer, and m is the number of training examples.
      *
      * @return the Z, A matrices containing the linear computation and activations of the feed forward pass.
      *         Each matrix has shape l x m, where l is the number of units in this layer, and m is the number of
      *         training examples.
      */
-    public Pair<SimpleMatrix, SimpleMatrix> activationForward(SimpleMatrix prevA) {
-        SimpleMatrix Z = linearForward(prevA);
+    public Pair<SimpleMatrix, SimpleMatrix> activationForward(SimpleMatrix A_prev) {
+        SimpleMatrix Z = linearForward(A_prev);
         SimpleMatrix A = new SimpleMatrix(Z.numRows(), Z.numCols());
         for (int r=0;r<A.numRows();r++) {
             for (int c=0;c<A.numCols();c++) {
@@ -98,12 +105,29 @@ public class Layer {
      * Perform the backprop step using gradient descent.
      * Note this step does NOT update weights and biases.
      *
-     * @param dZ the gradients from the next layer.
+     * @param dA the gradients of the activation
+     * @param Z the linear component
+     * @param A_prev activations from previous layer
      *
-     * @return the gradients dZ, dW, db for this layer
+     * @return dA(l-1), dW(l), db(l)
      */
-    public Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix dZ) {
-        return new Triplet<>(dZ, dZ, dZ);
+    public Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix dA, SimpleMatrix Z, SimpleMatrix A_prev) {
+        // calculate dZ(l) = dA(l) * g'(Z(l))
+        SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
+        for (int r=0;r<Z_prime.numRows();r++) {
+            for (int c=0;c<Z_prime.numCols();c++) {
+                Z_prime.set(r, c, activationFunction.dA(Z.get(r, c)));
+            }
+        }
+        SimpleMatrix dZ = dA.elementMult(Z_prime);
+        SimpleMatrix dA_prev = w.transpose().mult(dZ);
+
+        // dW = dZ * A(l-1).T
+        SimpleMatrix dW = dZ.mult(A_prev.transpose());
+
+        // note db = dZ
+
+        return new Triplet<>(dA_prev, dW, dZ);
     }
 
     /**
@@ -113,6 +137,7 @@ public class Layer {
      * @param db - deltas for biases
      */
     public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
+        // TODO: lambda term
         w = w.minus(dW);
         b = b.minus(db);
     }
