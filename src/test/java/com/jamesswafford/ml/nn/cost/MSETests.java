@@ -26,12 +26,17 @@ public class MSETests {
     }
 
     @Test
-    public void totalCost() {
+    public void averageCostFromSingleTrainingExample() {
         List<Double> predictions = Arrays.asList(0.8, 0.4, 0.1);
         List<Double> labels = Arrays.asList(1.0, 1.0, 0.0);
 
-        assertDoubleEquals(0.0, mse.totalCost(predictions, predictions));
-        assertDoubleEquals((0.04+0.36+0.01)/3.0, mse.totalCost(predictions, labels) );
+        assertDoubleEquals(0.0, mse.averageCost(predictions, predictions));
+        assertDoubleEquals((0.04+0.36+0.01)/3.0, mse.averageCost(predictions, labels) );
     }
 
+    @Test
+    public void averageCostFromBatch() {
+
+        // TODO
+    }
 }

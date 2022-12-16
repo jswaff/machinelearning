@@ -30,8 +30,8 @@ public class Network {
     }
 
     /**
-     * Train the network on inputs X and labels Y.  The shape of X should be m,n, where m is the number of training
-     * examples and n is the number of features.  The shape of Y should be m x 1.
+     * Train the network on inputs X and labels Y.  The shape of X should be n x m, where n is the number of features
+     * and m is the number of training examples.  The shape of Y should be 1 x m (a row vector).
      */
     public void train(SimpleMatrix X, SimpleMatrix Y) {
 
@@ -44,8 +44,8 @@ public class Network {
             prevA = A;
         }
 
-        double cost = costFunction.totalCost(A, Y);
-        System.out.println("cost: " + cost);
+//        double cost = costFunction.averageCost(A, Y);
+//        System.out.println("cost: " + cost);
 
         // TODO - backprop
     }

@@ -18,15 +18,15 @@ public class LayerTests {
         layer.initialize(3);
 
         // biases are initialized to 0
-        assertEquals(0.0, layer.getBias(0));
-        assertEquals(0.0, layer.getBias(4));
-        assertEquals(0.0, layer.getBias(9));
+        for (int j=0;j<10;j++) {
+            assertEquals(0.0, layer.getBias(j));
+        }
 
         // weights are initialized to a small random number between 0 and 1
-        for (int i=0;i<10;i++) {
-            for (int j=0;j<3;j++) {
-                assertTrue(layer.getWeight(i, j) > 0.0);
-                assertTrue(layer.getWeight(i, j) < 1.0);
+        for (int j=0;j<10;j++) {
+            for (int k=0;k<3;k++) {
+                assertTrue(layer.getWeight(j, k) > 0.0);
+                assertTrue(layer.getWeight(j, k) < 1.0);
             }
         }
     }
@@ -79,9 +79,126 @@ public class LayerTests {
         verify(activationFunction, times(1)).a(0.65);
     }
 
+    ActivationFunction aFunc = new ActivationFunction() {
+        @Override
+        public Double a(Double z) {
+            return z * 2;
+        }
+
+        @Override
+        public Double dA(Double a) {
+            return 2.0;
+        }
+    };
+
     @Test
-    public void forward3x4() {
-        ActivationFunction activationFunction = Mockito.mock(ActivationFunction.class);
+    public void forward3x4_x1() {
+        Layer layer = build3x4Layer(aFunc);
+
+        // input a column vector (one row per unit from previous layer)
+        SimpleMatrix X = new SimpleMatrix(3, 1);
+        X.set(0, 0, 0.1);
+        X.set(1, 0, 0.3);
+        X.set(2, 0, -0.2);
+
+        SimpleMatrix Z = layer.linearForward(X);
+
+        // the output should be a column vector with one row per unit in this layer
+        assertEquals(4, Z.numRows());
+        assertEquals(1, Z.numCols());
+        assertDoubleEquals(0.17, Z.get(0, 0));
+        assertDoubleEquals(0.16, Z.get(1, 0));
+        assertDoubleEquals(0.29, Z.get(2, 0));
+        assertDoubleEquals(0.105, Z.get(3, 0));
+
+        SimpleMatrix A = layer.activationForward(X);
+        assertEquals(4, A.numRows());
+        assertEquals(1, A.numCols());
+        assertDoubleEquals(0.17*2, A.get(0, 0));
+        assertDoubleEquals(0.16*2, A.get(1, 0));
+        assertDoubleEquals(0.29*2, A.get(2, 0));
+        assertDoubleEquals(0.105*2, A.get(3, 0));
+    }
+
+    @Test
+    // same layer, different inputs
+    public void forward3x4_x2() {
+        Layer layer = build3x4Layer(aFunc);
+
+        // input a column vector (one row per unit from previous layer)
+        SimpleMatrix X = new SimpleMatrix(3, 1);
+        X.set(0, 0, 0.4);
+        X.set(1, 0, -0.1);
+        X.set(2, 0, 0.0);
+
+        SimpleMatrix Z = layer.linearForward(X);
+
+        // the output should be a column vector with one row per unit in this layer
+        assertEquals(4, Z.numRows());
+        assertEquals(1, Z.numCols());
+
+        assertDoubleEquals(0.22, Z.get(0, 0));
+        assertDoubleEquals(0.36, Z.get(1, 0));
+        assertDoubleEquals(0.51, Z.get(2, 0));
+        assertDoubleEquals(0.07, Z.get(3, 0));
+
+        SimpleMatrix A = layer.activationForward(X);
+        assertEquals(4, A.numRows());
+        assertEquals(1, A.numCols());
+        assertDoubleEquals(0.22*2, A.get(0, 0));
+        assertDoubleEquals(0.36*2, A.get(1, 0));
+        assertDoubleEquals(0.51*2, A.get(2, 0));
+        assertDoubleEquals(0.07*2, A.get(3, 0));
+    }
+
+    @Test
+    void forward3x4_vectorized() {
+        Layer layer = build3x4Layer(aFunc);
+
+        SimpleMatrix X = new SimpleMatrix(3, 2);
+        // from x1 test
+        X.set(0, 0, 0.1);
+        X.set(1, 0, 0.3);
+        X.set(2, 0, -0.2);
+        // from x2 test
+        X.set(0, 1, 0.4);
+        X.set(1, 1, -0.1);
+        X.set(2, 1, 0.0);
+
+        SimpleMatrix Z = layer.linearForward(X);
+
+        // the output should have one row per unit and one column per training example
+        assertEquals(4, Z.numRows());
+        assertEquals(2, Z.numCols());
+
+        // test x1
+        assertDoubleEquals(0.17, Z.get(0, 0));
+        assertDoubleEquals(0.16, Z.get(1, 0));
+        assertDoubleEquals(0.29, Z.get(2, 0));
+        assertDoubleEquals(0.105, Z.get(3, 0));
+
+        // test x2
+        assertDoubleEquals(0.22, Z.get(0, 1));
+        assertDoubleEquals(0.36, Z.get(1, 1));
+        assertDoubleEquals(0.51, Z.get(2, 1));
+        assertDoubleEquals(0.07, Z.get(3, 1));
+
+        SimpleMatrix A = layer.activationForward(X);
+        assertEquals(4, A.numRows());
+        assertEquals(2, A.numCols());
+        assertDoubleEquals(0.17*2, A.get(0, 0));
+        assertDoubleEquals(0.16*2, A.get(1, 0));
+        assertDoubleEquals(0.29*2, A.get(2, 0));
+        assertDoubleEquals(0.105*2, A.get(3, 0));
+
+        assertDoubleEquals(0.22*2, A.get(0, 1));
+        assertDoubleEquals(0.36*2, A.get(1, 1));
+        assertDoubleEquals(0.51*2, A.get(2, 1));
+        assertDoubleEquals(0.07*2, A.get(3, 1));
+
+    }
+
+    private Layer build3x4Layer(ActivationFunction activationFunction) {
         Layer layer = new Layer(4, activationFunction);
         layer.initialize(3);
 
@@ -110,18 +227,6 @@ public class LayerTests {
             layer.setBias(i, 0.05);
         }
 
-        SimpleMatrix X = new SimpleMatrix(3, 1);
-        X.set(0, 0, 0.1);
-        X.set(1, 0, 0.3);
-        X.set(2, 0, -0.2);
-        SimpleMatrix Z = layer.linearForward(X);
-
-        assertEquals(4, Z.numRows());
-        assertEquals(1, Z.numCols());
-        assertDoubleEquals(0.17, Z.get(0, 0));
-        assertDoubleEquals(0.16, Z.get(1, 0));
-        assertDoubleEquals(0.29, Z.get(2, 0));
-        assertDoubleEquals(0.105, Z.get(3, 0));
+        return layer;
     }
-
 }
