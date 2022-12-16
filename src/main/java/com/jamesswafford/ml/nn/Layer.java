@@ -56,7 +56,7 @@ public class Layer {
     /**
      * Compute the linear portion (pre-activation) of the forward pass.
      *
-     * @param prevA the activations column vector from the previous layer, of shape l_prev x m, where l_prev is the
+     * @param prevA the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
      *              number of units in the previous layer, and m is the number of training examples.
      *
      * @return the Z matrix containing linear computation portion of the feed forward pass, of shape l x m,
@@ -76,7 +76,7 @@ public class Layer {
     /**
      * Compute the output (activation) of the forward pass.
      *
-     * @param prevA the activations column vector from the previous layer, of shape l_prev x m, where l_prev is the
+     * @param prevA the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
      *              number of units in the previous layer, and m is the number of training examples.
      *
      * @return the Z, A matrices containing the linear computation and activations of the feed forward pass.
@@ -106,7 +106,14 @@ public class Layer {
         return new Triplet<>(dZ, dZ, dZ);
     }
 
+    /**
+     * Update weights and biases by subtracting dW, dB.
+     *
+     * @param dW - deltas for weights
+     * @param db - deltas for biases
+     */
     public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
-
+        w = w.minus(dW);
+        b = b.minus(db);
     }
 }
