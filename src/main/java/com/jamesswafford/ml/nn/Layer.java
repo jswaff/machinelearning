@@ -15,6 +15,7 @@ public class Layer {
     private SimpleMatrix w;  // weights vector, j x k where j = units this layer, k = prev. layer
     private SimpleMatrix b;  // bias column vector, j x 1
 
+
     /**
      * Initialize this layer of the network by initializing the weights to small random values and
      * the biases to 0.
@@ -76,9 +77,10 @@ public class Layer {
      * @param prevA the activations column vector from the previous layer, of shape l_prev x m, where l_prev is the
      *              number of units in the previous layer, and m is the number of training examples.
      *
-     * @return the Z matrix containing activations of the feed forward pass, of shape l x m,
+     * @return the A matrix containing activations of the feed forward pass, of shape l x m,
      *              where l is the number of units in this layer, and m is the number of training examples.
      */
+    // TODO - return <Z, A>
     public SimpleMatrix activationForward(SimpleMatrix prevA) {
         SimpleMatrix Z = linearForward(prevA);
         SimpleMatrix A = new SimpleMatrix(Z.numRows(), Z.numCols());
@@ -88,5 +90,22 @@ public class Layer {
             }
         }
         return A;
+    }
+
+    /**
+     * Perform the backprop step using gradient descent.
+     * Note this step does NOT update weights and biases.
+     *
+     * @param dZ the gradients from the next layer.
+     *
+     * @return the gradients for this layer
+     */
+    // TODO: return dZ, dW, db
+    public SimpleMatrix backProp(SimpleMatrix dZ) {
+        return dZ;
+    }
+
+    public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
+
     }
 }
