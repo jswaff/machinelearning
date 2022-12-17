@@ -47,6 +47,8 @@ public class Network {
         Collections.reverse(reverseLayers);
 
         for (int i=0;i<numEpochs;i++) {
+            System.out.println("\n**********\nEPOCH " + (i+1) + "\n**********\n ");
+
             // feed forward
             SimpleMatrix A = X;
             for (Layer layer : layers) {
@@ -54,27 +56,26 @@ public class Network {
                 A = Z_A.getValue1();
             }
 
-            // TODO: calculate cost (use test data)
-//        double cost = costFunction.averageCost(A, Y);
-//        System.out.println("cost: " + cost);
-
             // backwards propagation
             System.out.println("A: ");  A.print();
             SimpleMatrix dA = A.minus(Y);
-            System.out.println("initial dA: "); dA.print();
+            System.out.println("\ninitial dA: "); dA.print();
 
             for (int L=0;L< reverseLayers.size();L++) {
-                System.out.println("backprop L=" + L);
+                System.out.println("\nbackprop L=" + L);
                 Layer layer = reverseLayers.get(L);
                 Pair<SimpleMatrix, SimpleMatrix> dW_db = layer.backProp(dA);
-                System.out.println("dW: "); dW_db.getValue0().print();
-                System.out.println("db: "); dW_db.getValue1().print();
+                System.out.println("\nw: "); layer.getWeights().print();
+                System.out.println("\ndW: "); dW_db.getValue0().print();
+
+                System.out.println("\nb: "); layer.getBiases().print();
+                System.out.println("\ndb: "); dW_db.getValue1().print();
                 if (L < reverseLayers.size()-1) {
                     // calculate dA for previous layer
                     Layer previousLayer = reverseLayers.get(L+1);
                     SimpleMatrix Z_prime = previousLayer.getZPrime();
                     dA = layer.getWeights().transpose().mult(dA).elementMult(Z_prime);
-                    System.out.println("dA: "); dA.print();
+                    System.out.println("\ndA: "); dA.print();
                 }
                 layer.updateWeightsAndBias(dW_db.getValue0(), dW_db.getValue1());
             }
