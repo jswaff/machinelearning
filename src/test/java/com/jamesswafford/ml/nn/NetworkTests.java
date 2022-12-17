@@ -25,21 +25,21 @@ public class NetworkTests {
         // 0 0 1 1
         // 0 1 0 1
         SimpleMatrix X = new SimpleMatrix(2, 4, false,
-                new double[]{ 0, 0, 1, 1, 0, 1, 0, 1 });
-        System.out.println("X: "); X.print();
+                new double[]{ 0, 0, 1, 1, 0, 1, 1, 0 });
+        X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 4, false,
                 new double[]{ 0, 1, 0, 0});
-        System.out.println("Y: "); Y.print();
+        Y.print();
 
         // initial cost
 
         // train the network
-        network.train(X, Y, 100);
+        network.train(X, Y, 1000);
 
         SimpleMatrix P = network.predict(X);
-        System.out.println("\nprediction: "); P.print();
+        P.print();
 
         // the cost should be close to 0
 
@@ -59,13 +59,13 @@ public class NetworkTests {
         // 0 0 1 1
         // 0 1 0 1
         SimpleMatrix X = new SimpleMatrix(2, 4, false,
-                new double[]{ 0, 0, 1, 1, 0, 1, 0, 1 });
-        System.out.println("X: "); X.print();
+                new double[]{ 0, 0, 1, 1, 0, 1, 1, 0 });
+        X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 4, false,
                 new double[]{ 0, 1, 1, 1});
-        System.out.println("Y: "); Y.print();
+        Y.print();
 
         // initial cost
 
@@ -73,7 +73,7 @@ public class NetworkTests {
         network.train(X, Y, 1000);
 
         SimpleMatrix P = network.predict(X);
-        System.out.println("\nprediction: "); P.print();
+        P.print();
 
         // the cost should be close to 0
 
@@ -97,12 +97,12 @@ public class NetworkTests {
         // 0 1 0 1
         SimpleMatrix X = new SimpleMatrix(2, 4, false,
                 new double[]{ 0, 0, 1, 1, 0, 1, 1, 0 });
-        System.out.println("X: "); X.print();
+        X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 4, false,
                 new double[]{ 0, 0, 1, 1});
-        System.out.println("Y: "); Y.print();
+        Y.print();
 
         // initial cost
 
@@ -110,7 +110,7 @@ public class NetworkTests {
         network.train(X, Y, 1000);
 
         SimpleMatrix P = network.predict(X);
-        System.out.println("\nprediction: "); P.print();
+        P.print();
 
         // the cost should be close to 0
 
