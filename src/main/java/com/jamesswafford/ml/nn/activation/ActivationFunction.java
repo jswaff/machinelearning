@@ -2,8 +2,8 @@ package com.jamesswafford.ml.nn.activation;
 
 public interface ActivationFunction {
 
-    Double a(Double z);
+    Double func(Double z);
 
-    Double dA(Double a);
+    Double derivativeFunc(Double a);
 
 }

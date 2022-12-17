@@ -3,12 +3,12 @@ package com.jamesswafford.ml.nn.activation;
 public class Identity implements ActivationFunction {
 
     @Override
-    public Double a(Double z) {
+    public Double func(Double z) {
         return z;
     }
 
     @Override
-    public Double dA(Double a) {
+    public Double derivativeFunc(Double a) {
         return 1.0;
     }
 }

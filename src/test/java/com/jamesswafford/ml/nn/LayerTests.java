@@ -4,7 +4,6 @@ import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -13,6 +12,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class LayerTests {
+
+    ActivationFunction aFunc = new ActivationFunction() {
+        @Override
+        public Double func(Double z) {
+            return z * 2;
+        }
+
+        @Override
+        public Double derivativeFunc(Double a) {
+            return 2.0;
+        }
+    };
 
     @Test
     public void initialize() {
@@ -43,14 +54,15 @@ public class LayerTests {
 
         SimpleMatrix X = new SimpleMatrix(1, 1);
         X.set(0, 0, 0.5);
-        SimpleMatrix Z = layer.linearForward(X);
+
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(X);
+        SimpleMatrix Z = Z_A.getValue0();
 
         assertEquals(1, Z.numRows());
         assertEquals(1, Z.numCols());
         assertEquals(0.1, Z.get(0, 0));
 
-        layer.activationForward(X);
-        verify(activationFunction, times(1)).a(0.1);
+        verify(activationFunction, times(1)).func(0.1);
     }
 
     @Test
@@ -67,7 +79,8 @@ public class LayerTests {
 
         SimpleMatrix X = new SimpleMatrix(1, 1);
         X.set(0, 0, 2.0);
-        SimpleMatrix Z = layer.linearForward(X);
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(X);
+        SimpleMatrix Z = Z_A.getValue0();
 
         assertEquals(3, Z.numRows());
         assertEquals(1, Z.numCols());
@@ -75,145 +88,77 @@ public class LayerTests {
         assertEquals(0.45, Z.get(1, 0));
         assertEquals(0.65, Z.get(2, 0));
 
-        layer.activationForward(X);
-        verify(activationFunction, times(1)).a(0.25);
-        verify(activationFunction, times(1)).a(0.45);
-        verify(activationFunction, times(1)).a(0.65);
+        verify(activationFunction, times(1)).func(0.25);
+        verify(activationFunction, times(1)).func(0.45);
+        verify(activationFunction, times(1)).func(0.65);
     }
 
-    ActivationFunction aFunc = new ActivationFunction() {
-        @Override
-        public Double a(Double z) {
-            return z * 2;
-        }
-
-        @Override
-        public Double dA(Double a) {
-            return 2.0;
-        }
-    };
-
     @Test
-    public void forwardAndBack_3x4_example1() {
+    public void forwardAndBack_3x4_singleInput() {
         Layer layer = build3x4Layer(aFunc);
 
         // input a column vector (one row per unit from previous layer)
-        SimpleMatrix X = new SimpleMatrix(3, 1);
-        X.set(0, 0, 0.1);
-        X.set(1, 0, 0.3);
-        X.set(2, 0, -0.2);
+        SimpleMatrix X = new SimpleMatrix(3, 1, true, new double[]{.1,.3,-.2});
 
-        SimpleMatrix Z = layer.linearForward(X);
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(X);
+        SimpleMatrix Z = Z_A.getValue0();
+        SimpleMatrix A = Z_A.getValue1();
 
         // the output should be a column vector with one row per unit in this layer
         assertEquals(4, Z.numRows());
         assertEquals(1, Z.numCols());
+        assertEquals(4, A.numRows());
+        assertEquals(1, A.numCols());
+
         assertDoubleEquals(0.17, Z.get(0, 0));
         assertDoubleEquals(0.16, Z.get(1, 0));
         assertDoubleEquals(0.29, Z.get(2, 0));
         assertDoubleEquals(0.105, Z.get(3, 0));
 
-        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(X);
-        assertMatrixEquals(Z, Z_A.getValue0());
-        SimpleMatrix A = Z_A.getValue1();
-        assertEquals(4, A.numRows());
-        assertEquals(1, A.numCols());
         assertDoubleEquals(0.17*2, A.get(0, 0));
         assertDoubleEquals(0.16*2, A.get(1, 0));
         assertDoubleEquals(0.29*2, A.get(2, 0));
         assertDoubleEquals(0.105*2, A.get(3, 0));
 
-        // backprop
-        SimpleMatrix dA_l = new SimpleMatrix(4, 1, true,
-                new double[] { 0, 1, 2, 3 }); // completely contrived
-        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z);
-
-        // the gradients for the previous layer should be a 3x1 row vector
-        SimpleMatrix dA = dA_dW_db.getValue0();
-        assertEquals(3, dA.numRows());
-        assertEquals(1, dA.numCols());
-
-        assertDoubleEquals(7.5, dA.get(0, 0));
-        assertDoubleEquals(4.2, dA.get(1, 0));
-        assertDoubleEquals(2.5, dA.get(2, 0));
+        // back prop
+        SimpleMatrix dA = new SimpleMatrix(4, 1, true, new double[] { 0, 1, -1, 0.5 });
+        Pair<SimpleMatrix, SimpleMatrix> dW_db = layer.backProp(dA);
+        SimpleMatrix dW = dW_db.getValue0();
+        SimpleMatrix db = dW_db.getValue1();
 
         // the delta weights should be the same shape as the weights matrix
-        SimpleMatrix dW = dA_dW_db.getValue1();
         assertEquals(4, dW.numRows());
         assertEquals(3, dW.numCols());
-        // dZ = dA_1 doubled, since the derivative of the activation function is always 2
-        //    = [ 0 2 4 6 ]  (col vector  4 x 1)
-        // A_prev.T = X.T = [ .1, .3, -.2 ]  (row vector 1 x 3)
-        /* dW = dZ * A_prev.T
-         0           0           0
-        .2          .6         -.4
-        .4          1.2        -.8
-        .6          1.8        -1.2
-        */
-        assertDoubleEquals(0.6, dW.get(1, 1));
-        assertDoubleEquals(-1.2, dW.get(3, 2));
+        /*
+          0           0           0   <--- no adjustments since feature wasn't active
+         .1          .3         -.2   <--- 100% adjustment since the error was 1
+        -.1         -.3          .2   <--- other way
+         .05         .15        -.1   <--- 50% adjustment
+         */
+        assertDoubleEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},dW.getDDRM().getData());
 
-        // db should be the same shape as b 
-        SimpleMatrix db = dA_dW_db.getValue2();
+        // the delta to the bias is the sum over all errors (averages over all examples)
         assertEquals(4, db.numRows());
         assertEquals(1, db.numCols());
-        assertDoubleEquals(2, db.get(1, 0));
-        assertDoubleEquals(6, db.get(3, 0));
+        assertDoubleEquals(new double[]{.5,.5,.5,.5}, db.getDDRM().getData());
     }
 
     @Test
-    // same layer, different inputs
-    public void forward3x4_x2() {
+    void forwardAndBack_3x4_batch() {
         Layer layer = build3x4Layer(aFunc);
 
-        // input a column vector (one row per unit from previous layer)
-        SimpleMatrix X = new SimpleMatrix(3, 1);
-        X.set(0, 0, 0.4);
-        X.set(1, 0, -0.1);
-        X.set(2, 0, 0.0);
+        SimpleMatrix X = new SimpleMatrix(3, 2, false,
+                new double[]{.1,.3,-.2,.4,-.1,0});
 
-        SimpleMatrix Z = layer.linearForward(X);
-
-        // the output should be a column vector with one row per unit in this layer
-        assertEquals(4, Z.numRows());
-        assertEquals(1, Z.numCols());
-
-        assertDoubleEquals(0.22, Z.get(0, 0));
-        assertDoubleEquals(0.36, Z.get(1, 0));
-        assertDoubleEquals(0.51, Z.get(2, 0));
-        assertDoubleEquals(0.07, Z.get(3, 0));
-
-        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(X);
-        assertMatrixEquals(Z, Z_A.getValue0());
+        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(X);
+        SimpleMatrix Z = Z_A.getValue0();
         SimpleMatrix A = Z_A.getValue1();
-        assertEquals(4, A.numRows());
-        assertEquals(1, A.numCols());
-        assertDoubleEquals(0.22*2, A.get(0, 0));
-        assertDoubleEquals(0.36*2, A.get(1, 0));
-        assertDoubleEquals(0.51*2, A.get(2, 0));
-        assertDoubleEquals(0.07*2, A.get(3, 0));
 
-    }
-
-    @Test
-    void forward3x4_vectorized() {
-        Layer layer = build3x4Layer(aFunc);
-
-        SimpleMatrix X = new SimpleMatrix(3, 2);
-        // from x1 test
-        X.set(0, 0, 0.1);
-        X.set(1, 0, 0.3);
-        X.set(2, 0, -0.2);
-        // from x2 test
-        X.set(0, 1, 0.4);
-        X.set(1, 1, -0.1);
-        X.set(2, 1, 0.0);
-
-        SimpleMatrix Z = layer.linearForward(X);
-
-        // the output should have one row per unit and one column per training example
+        // the output should have one row per unit and one column per input
         assertEquals(4, Z.numRows());
         assertEquals(2, Z.numCols());
+        assertEquals(4, A.numRows());
+        assertEquals(2, A.numCols());
 
         // test x1
         assertDoubleEquals(0.17, Z.get(0, 0));
@@ -221,53 +166,45 @@ public class LayerTests {
         assertDoubleEquals(0.29, Z.get(2, 0));
         assertDoubleEquals(0.105, Z.get(3, 0));
 
+        assertDoubleEquals(0.17*2, A.get(0, 0));
+        assertDoubleEquals(0.16*2, A.get(1, 0));
+        assertDoubleEquals(0.29*2, A.get(2, 0));
+        assertDoubleEquals(0.105*2, A.get(3, 0));
+
         // test x2
         assertDoubleEquals(0.22, Z.get(0, 1));
         assertDoubleEquals(0.36, Z.get(1, 1));
         assertDoubleEquals(0.51, Z.get(2, 1));
         assertDoubleEquals(0.07, Z.get(3, 1));
 
-        Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(X);
-        assertMatrixEquals(Z, Z_A.getValue0());
-        SimpleMatrix A = Z_A.getValue1();
-        assertEquals(4, A.numRows());
-        assertEquals(2, A.numCols());
-        assertDoubleEquals(0.17*2, A.get(0, 0));
-        assertDoubleEquals(0.16*2, A.get(1, 0));
-        assertDoubleEquals(0.29*2, A.get(2, 0));
-        assertDoubleEquals(0.105*2, A.get(3, 0));
-
         assertDoubleEquals(0.22*2, A.get(0, 1));
         assertDoubleEquals(0.36*2, A.get(1, 1));
         assertDoubleEquals(0.51*2, A.get(2, 1));
         assertDoubleEquals(0.07*2, A.get(3, 1));
 
-        // backprop
-        SimpleMatrix dA_l = new SimpleMatrix(4, 2, false,
-                new double[] { 0, 1, 2, 3, 0, 1, 2, 3 }); // completely contrived
-        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z);
-
-        // the gradients for the previous layer -- num units prev layer x m
-        SimpleMatrix dA = dA_dW_db.getValue0();
-        assertEquals(3, dA.numRows());
-        assertEquals(2, dA.numCols());
-
-        assertDoubleEquals(7.5, dA.get(0, 0));
-        assertDoubleEquals(4.2, dA.get(1, 0));
-        assertDoubleEquals(2.5, dA.get(2, 0));
-        assertDoubleEquals(7.5, dA.get(0, 1));
-        assertDoubleEquals(4.2, dA.get(1, 1));
-        assertDoubleEquals(2.5, dA.get(2, 1));
+        // back prop
+        SimpleMatrix dA = new SimpleMatrix(4, 2, false,
+                new double[] { 0, 1, -1, 0.5, 0, 0, 0, 0 }); // no error second input
+        Pair<SimpleMatrix, SimpleMatrix> dW_db = layer.backProp(dA);
+        SimpleMatrix dW = dW_db.getValue0();
+        SimpleMatrix db = dW_db.getValue1();
 
         // the delta weights should be the same shape as the weights matrix
-        SimpleMatrix dW = dA_dW_db.getValue1();
         assertEquals(4, dW.numRows());
         assertEquals(3, dW.numCols());
+        // note this is half the matrix from the single example, because x2 has no error associated with it.
+        /*
+          0           0           0
+         .05         .15        -.1
+        -.05        -.15         .1
+         .025        .075       -.05
+         */
+        assertDoubleEquals(new double[]{0,0,0,.05,.15,-.1,-.05,-.15,.1,.025,.075,-.05},dW.getDDRM().getData());
 
-        // db should be the same as dZ
-        SimpleMatrix db = dA_dW_db.getValue2();
+        // the delta to the bias is the sum over all errors (averaged over all examples)
         assertEquals(4, db.numRows());
-        assertEquals(2, db.numCols());
+        assertEquals(1, db.numCols());
+        assertDoubleEquals(new double[]{.25,.25,.25,.25}, db.getDDRM().getData());
     }
 
     @Test

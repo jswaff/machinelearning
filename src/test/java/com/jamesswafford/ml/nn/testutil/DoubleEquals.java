@@ -1,7 +1,5 @@
 package com.jamesswafford.ml.nn.testutil;
 
-import org.ejml.simple.SimpleMatrix;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,13 +20,10 @@ public class DoubleEquals {
         }
     }
 
-    public static void assertMatrixEquals(SimpleMatrix m1, SimpleMatrix m2) {
-        assertEquals(m1.numRows(), m2.numRows());
-        assertEquals(m1.numCols(), m2.numCols());
-        for (int r=0;r<m1.numRows();r++) {
-            for (int c=0;c<m1.numCols();c++) {
-                assertDoubleEquals(m1.get(r, c), m2.get(r, c));
-            }
+    public static void assertDoubleEquals(double[] arr1, double[] arr2) {
+        assertEquals(arr1.length, arr2.length);
+        for (int i=0;i<arr1.length;i++) {
+            assertDoubleEquals(arr1[i], arr2[i]);
         }
     }
 }

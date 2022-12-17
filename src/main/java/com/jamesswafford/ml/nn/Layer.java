@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.util.Random;
 
@@ -18,7 +17,10 @@ public class Layer {
 
     private SimpleMatrix w;  // weights vector, j x k where j = units this layer, k = prev. layer
     private SimpleMatrix b;  // bias column vector, j x 1
-    private SimpleMatrix A_prev;
+
+    private SimpleMatrix X;  // input from previous layer
+    private SimpleMatrix Z;  // the linear computation portion of the output
+    private SimpleMatrix A;  // output of this layer -- g(Z)
 
     /**
      * Initialize this layer of the network by initializing the weights to small random values and
@@ -48,6 +50,8 @@ public class Layer {
         return w.get(unit, prevUnit);
     }
 
+    public SimpleMatrix getWeights() { return w; }
+
     public void setWeight(int unit, int prevUnit, Double val) {
         w.set(unit, prevUnit, val);
     }
@@ -60,84 +64,78 @@ public class Layer {
         b.set(unit, 0, val);
     }
 
-    /**
-     * Compute the linear portion (pre-activation) of the forward pass.
-     *
-     * @param A_prev the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
-     *              number of units in the previous layer, and m is the number of training examples.
-     *
-     * @return the Z matrix containing linear computation portion of the feed forward pass, of shape l x m,
-     *              where l is the number of units in this layer, and m is the number of training examples.
-     */
-    public SimpleMatrix linearForward(SimpleMatrix A_prev) {
-        // there is no "broadcast" operator in the OO interface of the EJML lib.
-        // if there were (column) broadcasting we could do something like w.mult(prevA).bcPlus(b);
-
-        SimpleMatrix Z = w.mult(A_prev);
-        for (int m=0;m<Z.numCols();m++) {
-            Z.setColumn(m, 0, Z.extractVector(false, m).plus(b).getDDRM().getData());
+    public SimpleMatrix getZPrime() {
+        SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
+        // unfortunately no broadcast operator
+        for (int r=0;r<Z_prime.numRows();r++) {
+            for (int c=0;c<Z_prime.numCols();c++) {
+                Z_prime.set(r, c, activationFunction.derivativeFunc(Z.get(r, c)));
+            }
         }
-        return Z;
+        return Z_prime;
     }
 
     /**
-     * Compute the output (activation) of the forward pass.
+     * Perform the forward computation step.  The output is the pair <Z, A>, where Z is the linear portion of the
+     * computation and A is the activation function applied to Z.
      *
-     * @param A_prev the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
-     *              number of units in the previous layer, and m is the number of training examples.
+     * @param X the inputs from the previous layer, of shape n x m, where n is the number of units in the previous
+     *          layer, and m is the number of training examples.
      *
      * @return the Z, A matrices containing the linear computation and activations of the feed forward pass.
      *         Each matrix has shape l x m, where l is the number of units in this layer, and m is the number of
      *         training examples.
      */
-    public Pair<SimpleMatrix, SimpleMatrix> activationForward(SimpleMatrix A_prev) {
-        this.A_prev = A_prev;
-        SimpleMatrix Z = linearForward(A_prev);
-        SimpleMatrix A = new SimpleMatrix(Z.numRows(), Z.numCols());
+    public Pair<SimpleMatrix, SimpleMatrix> feedForward(SimpleMatrix X) {
+        this.X = X;
+
+        // there is no "broadcast" operator in the OO interface of the EJML lib.
+        // if there were (column) broadcasting we could do something like w.mult(X).bcPlus(b);
+        Z = w.mult(X);
+        for (int m=0;m<Z.numCols();m++) {
+            Z.setColumn(m, 0, Z.extractVector(false, m).plus(b).getDDRM().getData());
+        }
+
+        A = new SimpleMatrix(Z.numRows(), Z.numCols());
         for (int r=0;r<A.numRows();r++) {
             for (int c=0;c<A.numCols();c++) {
-                A.set(r, c, activationFunction.a(Z.get(r, c)));
+                A.set(r, c, activationFunction.func(Z.get(r, c)));
             }
         }
         return new Pair<>(Z, A);
     }
 
     /**
-     * Perform the backprop step using gradient descent.
+     * Perform the backwards propagation step using gradient descent.
      * Note this step does NOT update weights and biases.
      *
-     * @param dA the gradients of the activation
-     * @param Z the linear component
+     * @param A_error the error of the activation function
      *
-     * @return dA(l-1), dW(l), db(l)
+     * @return dW, db
      */
-    public Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix dA, SimpleMatrix Z) {
-        // calculate dZ(l) = dA(l) * g'(Z(l))
-        SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
-        for (int r=0;r<Z_prime.numRows();r++) {
-            for (int c=0;c<Z_prime.numCols();c++) {
-                Z_prime.set(r, c, activationFunction.dA(Z.get(r, c)));
-            }
+    public Pair<SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix A_error) {
+
+        // the adjustment to the weights is proportional to how active the feature was
+        int m = X.numCols();
+        SimpleMatrix dW = A_error.mult(this.X.transpose()).divide(m);
+
+        // adjust the bias
+        double dbVal = A_error.elementSum() / m;
+        SimpleMatrix db = new SimpleMatrix(b.numRows(), 1);
+        for (int r=0;r<b.numRows();r++) {
+            db.set(r, 0, dbVal);
         }
-        SimpleMatrix dZ = dA.elementMult(Z_prime);
-        SimpleMatrix dA_prev = w.transpose().mult(dZ);
 
-        // dW = dZ * A(l-1).T
-        SimpleMatrix dW = dZ.mult(this.A_prev.transpose());
-
-        // note db = dZ
-
-        return new Triplet<>(dA_prev, dW, dZ);
+        return new Pair<>(dW, db);
     }
 
     /**
-     * Update weights and biases by subtracting dW, dB.
+     * Update weights and biases
      *
      * @param dW - deltas for weights
      * @param db - deltas for biases
      */
     public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
-        // TODO: lambda term
         w = w.minus(dW);
         b = b.minus(db);
     }

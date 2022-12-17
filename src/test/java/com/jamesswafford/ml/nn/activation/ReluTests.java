@@ -10,15 +10,15 @@ public class ReluTests {
 
     @Test
     void activation() {
-        assertEquals(5.0, relu.a(5.0));
-        assertEquals(0.0, relu.a(0.0));
-        assertEquals(0.0, relu.a(-1.0));
+        assertEquals(5.0, relu.func(5.0));
+        assertEquals(0.0, relu.func(0.0));
+        assertEquals(0.0, relu.func(-1.0));
     }
 
     @Test
     void derivative() {
-        assertEquals(0.0, relu.dA(-0.00001));
-        assertEquals(1.0, relu.dA(0.0)); // technically undefined
-        assertEquals(1.0, relu.dA(0.00001));
+        assertEquals(0.0, relu.derivativeFunc(-0.00001));
+        assertEquals(1.0, relu.derivativeFunc(0.0)); // technically undefined
+        assertEquals(1.0, relu.derivativeFunc(0.00001));
     }
 }

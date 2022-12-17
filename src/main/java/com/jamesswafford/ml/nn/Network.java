@@ -6,7 +6,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.util.*;
 
@@ -47,17 +46,12 @@ public class Network {
         List<Layer> reverseLayers = new ArrayList<>(layers);
         Collections.reverse(reverseLayers);
 
-        Map<Layer, SimpleMatrix> Z_cache = new HashMap<>();
-        Map<Layer, SimpleMatrix> A_cache = new HashMap<>();
         for (int i=0;i<numEpochs;i++) {
             // feed forward
             SimpleMatrix A = X;
             for (Layer layer : layers) {
-                Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(A);
+                Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
                 A = Z_A.getValue1();
-                // cache the results for use in back prop
-                Z_cache.put(layer, Z_A.getValue0());
-                A_cache.put(layer, A);
             }
 
             // TODO: calculate cost (use test data)
@@ -65,13 +59,24 @@ public class Network {
 //        System.out.println("cost: " + cost);
 
             // backwards propagation
+            System.out.println("A: ");  A.print();
             SimpleMatrix dA = A.minus(Y);
+            System.out.println("initial dA: "); dA.print();
 
-            for (Layer layer : reverseLayers) {
-                SimpleMatrix Z = Z_cache.get(layer);
-                Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA, Z);
-                dA = dA_dW_db.getValue0();
-                layer.updateWeightsAndBias(dA_dW_db.getValue1(), dA_dW_db.getValue2());
+            for (int L=0;L< reverseLayers.size();L++) {
+                System.out.println("backprop L=" + L);
+                Layer layer = reverseLayers.get(L);
+                Pair<SimpleMatrix, SimpleMatrix> dW_db = layer.backProp(dA);
+                System.out.println("dW: "); dW_db.getValue0().print();
+                System.out.println("db: "); dW_db.getValue1().print();
+                if (L < reverseLayers.size()-1) {
+                    // calculate dA for previous layer
+                    Layer previousLayer = reverseLayers.get(L+1);
+                    SimpleMatrix Z_prime = previousLayer.getZPrime();
+                    dA = layer.getWeights().transpose().mult(dA).elementMult(Z_prime);
+                    System.out.println("dA: "); dA.print();
+                }
+                layer.updateWeightsAndBias(dW_db.getValue0(), dW_db.getValue1());
             }
         }
     }
@@ -86,7 +91,7 @@ public class Network {
 
         SimpleMatrix A = X;
         for (Layer layer : layers) {
-            A = layer.activationForward(A).getValue1();
+            A = layer.feedForward(A).getValue1();
         }
 
         return A;
