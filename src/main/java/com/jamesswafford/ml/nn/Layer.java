@@ -18,7 +18,7 @@ public class Layer {
 
     private SimpleMatrix w;  // weights vector, j x k where j = units this layer, k = prev. layer
     private SimpleMatrix b;  // bias column vector, j x 1
-
+    private SimpleMatrix A_prev;
 
     /**
      * Initialize this layer of the network by initializing the weights to small random values and
@@ -63,17 +63,17 @@ public class Layer {
     /**
      * Compute the linear portion (pre-activation) of the forward pass.
      *
-     * @param prevA the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
+     * @param A_prev the activations matrix from the previous layer, of shape l_prev x m, where l_prev is the
      *              number of units in the previous layer, and m is the number of training examples.
      *
      * @return the Z matrix containing linear computation portion of the feed forward pass, of shape l x m,
      *              where l is the number of units in this layer, and m is the number of training examples.
      */
-    public SimpleMatrix linearForward(SimpleMatrix prevA) {
+    public SimpleMatrix linearForward(SimpleMatrix A_prev) {
         // there is no "broadcast" operator in the OO interface of the EJML lib.
         // if there were (column) broadcasting we could do something like w.mult(prevA).bcPlus(b);
 
-        SimpleMatrix Z = w.mult(prevA);
+        SimpleMatrix Z = w.mult(A_prev);
         for (int m=0;m<Z.numCols();m++) {
             Z.setColumn(m, 0, Z.extractVector(false, m).plus(b).getDDRM().getData());
         }
@@ -91,6 +91,7 @@ public class Layer {
      *         training examples.
      */
     public Pair<SimpleMatrix, SimpleMatrix> activationForward(SimpleMatrix A_prev) {
+        this.A_prev = A_prev;
         SimpleMatrix Z = linearForward(A_prev);
         SimpleMatrix A = new SimpleMatrix(Z.numRows(), Z.numCols());
         for (int r=0;r<A.numRows();r++) {
@@ -107,11 +108,10 @@ public class Layer {
      *
      * @param dA the gradients of the activation
      * @param Z the linear component
-     * @param A_prev activations from previous layer
      *
      * @return dA(l-1), dW(l), db(l)
      */
-    public Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix dA, SimpleMatrix Z, SimpleMatrix A_prev) {
+    public Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix dA, SimpleMatrix Z) {
         // calculate dZ(l) = dA(l) * g'(Z(l))
         SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
         for (int r=0;r<Z_prime.numRows();r++) {
@@ -123,7 +123,7 @@ public class Layer {
         SimpleMatrix dA_prev = w.transpose().mult(dZ);
 
         // dW = dZ * A(l-1).T
-        SimpleMatrix dW = dZ.mult(A_prev.transpose());
+        SimpleMatrix dW = dZ.mult(this.A_prev.transpose());
 
         // note db = dZ
 

@@ -126,7 +126,7 @@ public class LayerTests {
         // backprop
         SimpleMatrix dA_l = new SimpleMatrix(4, 1, true,
                 new double[] { 0, 1, 2, 3 }); // completely contrived
-        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z, X);
+        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z);
 
         // the gradients for the previous layer should be a 3x1 row vector
         SimpleMatrix dA = dA_dW_db.getValue0();
@@ -153,7 +153,7 @@ public class LayerTests {
         assertDoubleEquals(0.6, dW.get(1, 1));
         assertDoubleEquals(-1.2, dW.get(3, 2));
 
-        // db should be the same as dZ
+        // db should be the same shape as b 
         SimpleMatrix db = dA_dW_db.getValue2();
         assertEquals(4, db.numRows());
         assertEquals(1, db.numCols());
@@ -245,7 +245,7 @@ public class LayerTests {
         // backprop
         SimpleMatrix dA_l = new SimpleMatrix(4, 2, false,
                 new double[] { 0, 1, 2, 3, 0, 1, 2, 3 }); // completely contrived
-        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z, X);
+        Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA_l, Z);
 
         // the gradients for the previous layer -- num units prev layer x m
         SimpleMatrix dA = dA_dW_db.getValue0();

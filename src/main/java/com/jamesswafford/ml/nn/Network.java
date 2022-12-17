@@ -6,10 +6,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Builder
@@ -48,13 +47,17 @@ public class Network {
         List<Layer> reverseLayers = new ArrayList<>(layers);
         Collections.reverse(reverseLayers);
 
+        Map<Layer, SimpleMatrix> Z_cache = new HashMap<>();
+        Map<Layer, SimpleMatrix> A_cache = new HashMap<>();
         for (int i=0;i<numEpochs;i++) {
             // feed forward
             SimpleMatrix A = X;
             for (Layer layer : layers) {
                 Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.activationForward(A);
                 A = Z_A.getValue1();
-                // TODO: cache Z,A per layer
+                // cache the results for use in back prop
+                Z_cache.put(layer, Z_A.getValue0());
+                A_cache.put(layer, A);
             }
 
             // TODO: calculate cost (use test data)
@@ -62,12 +65,13 @@ public class Network {
 //        System.out.println("cost: " + cost);
 
             // backwards propagation
-            // dZ = A - Y
+            SimpleMatrix dA = A.minus(Y);
 
             for (Layer layer : reverseLayers) {
-                // get cached Z, A for this layer
-                // dZ, dW, db = layer.backprop(dZ, Z, A)
-                // layer.updateWeightsAndBiases(dW, db)
+                SimpleMatrix Z = Z_cache.get(layer);
+                Triplet<SimpleMatrix, SimpleMatrix, SimpleMatrix> dA_dW_db = layer.backProp(dA, Z);
+                dA = dA_dW_db.getValue0();
+                layer.updateWeightsAndBias(dA_dW_db.getValue1(), dA_dW_db.getValue2());
             }
         }
     }
@@ -80,7 +84,12 @@ public class Network {
      */
     public SimpleMatrix predict(SimpleMatrix X) {
 
-        return new SimpleMatrix(1, X.numCols());
+        SimpleMatrix A = X;
+        for (Layer layer : layers) {
+            A = layer.activationForward(A).getValue1();
+        }
+
+        return A;
     }
 
 }
