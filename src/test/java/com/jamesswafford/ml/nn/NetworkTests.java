@@ -116,4 +116,47 @@ public class NetworkTests {
 
     }
 
+    @Test
+    public void booleanExpression() {
+        // this test models the boolean expression
+        // AND( NOT(AND(A,B)), NOT(OR(A,B)), C)
+        // This expression is equivalent to the logic gate found here:
+        // https://www.watelectronics.com/what-is-a-combinational-logic-circuit-types-and-applications/
+
+        Network network = Network.builder()
+                .numInputUnits(3)
+                .layers(List.of(
+                        new Layer(2, new Sigmoid()),
+                        new Layer(1, new Sigmoid())
+                ))
+                .costFunction(new MSE())
+                .build();
+
+        network.initialize();
+
+        // input matrix is 3 (features) x 8 (training examples)
+        // 0 0 0 0 1 1 1 1
+        // 0 0 1 1 0 0 1 1
+        // 0 1 0 1 0 1 0 1
+        SimpleMatrix X = new SimpleMatrix(3, 8, true,
+                new double[]{ 0,0,0,0,1,1,1,1,0,0,1,1,0,0,1,1,0,1,0,1,0,1,0,1 });
+        X.print();
+
+        // labels
+        SimpleMatrix Y = new SimpleMatrix(1, 8, true,
+                new double[]{ 0,0,0,0,1,0,0,0 });
+        Y.print();
+
+        // initial cost
+
+        // train the network
+        network.train(X, Y, 100000);
+
+        SimpleMatrix P = network.predict(X);
+        P.print();
+
+        // the cost should be close to 0
+
+    }
+
 }
