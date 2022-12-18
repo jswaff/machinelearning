@@ -21,50 +21,14 @@ public class NetworkTests {
 
         network.initialize();
 
-        // input matrix is 2 (features) x 4 (training examples)
-        // 0 0 1 1
-        // 0 1 0 1
-        SimpleMatrix X = new SimpleMatrix(2, 4, false,
-                new double[]{ 0, 0, 1, 1, 0, 1, 1, 0 });
+        SimpleMatrix X = new SimpleMatrix(2, 4, true,
+                new double[]{ 0, 0, 1, 1,
+                              0, 1, 1, 0 });
         X.print();
 
         // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 4, false,
-                new double[]{ 0, 1, 0, 0});
-        Y.print();
-
-        // initial cost
-
-        // train the network
-        network.train(X, Y, 1000);
-
-        SimpleMatrix P = network.predict(X);
-        P.print();
-
-        // the cost should be close to 0
-
-    }
-
-    @Test
-    public void orGate() {
-        Network network = Network.builder()
-                .numInputUnits(2)
-                .layers(List.of(new Layer(1, new Sigmoid())))
-                .costFunction(new MSE())
-                .build();
-
-        network.initialize();
-
-        // input matrix is 2 (features) x 4 (training examples)
-        // 0 0 1 1
-        // 0 1 0 1
-        SimpleMatrix X = new SimpleMatrix(2, 4, false,
-                new double[]{ 0, 0, 1, 1, 0, 1, 1, 0 });
-        X.print();
-
-        // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 4, false,
-                new double[]{ 0, 1, 1, 1});
+        SimpleMatrix Y = new SimpleMatrix(1, 4, true,
+                new double[]{ 0, 0, 1, 0 });
         Y.print();
 
         // initial cost
@@ -92,16 +56,14 @@ public class NetworkTests {
 
         network.initialize();
 
-        // input matrix is 2 (features) x 4 (training examples)
-        // 0 0 1 1
-        // 0 1 0 1
-        SimpleMatrix X = new SimpleMatrix(2, 4, false,
-                new double[]{ 0, 0, 1, 1, 0, 1, 1, 0 });
+        SimpleMatrix X = new SimpleMatrix(2, 4, true,
+                new double[]{ 0, 0, 1, 1,
+                              0, 1, 1, 0 });
         X.print();
 
         // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 4, false,
-                new double[]{ 0, 0, 1, 1});
+        SimpleMatrix Y = new SimpleMatrix(1, 4, true,
+                new double[]{ 0, 1, 0, 1});
         Y.print();
 
         // initial cost
@@ -134,17 +96,54 @@ public class NetworkTests {
 
         network.initialize();
 
-        // input matrix is 3 (features) x 8 (training examples)
-        // 0 0 0 0 1 1 1 1
-        // 0 0 1 1 0 0 1 1
-        // 0 1 0 1 0 1 0 1
         SimpleMatrix X = new SimpleMatrix(3, 8, true,
-                new double[]{ 0,0,0,0,1,1,1,1,0,0,1,1,0,0,1,1,0,1,0,1,0,1,0,1 });
+                new double[]{ 0,0,0,0,1,1,1,1,
+                              0,0,1,1,0,0,1,1,
+                              0,1,0,1,0,1,0,1 });
         X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 8, true,
                 new double[]{ 0,0,0,0,1,0,0,0 });
+        Y.print();
+
+        // initial cost
+
+        // train the network
+        network.train(X, Y, 100000);
+
+        SimpleMatrix P = network.predict(X);
+        P.print();
+
+        // the cost should be close to 0
+
+    }
+
+    @Test
+    public void threeHot() {
+        // given 4 inputs, exactly three must be active
+        Network network = Network.builder()
+                .numInputUnits(4)
+                .layers(List.of(
+                        new Layer(3, new Sigmoid()),
+                        new Layer(3, new Sigmoid()),
+                        new Layer(1, new Sigmoid())
+                ))
+                .costFunction(new MSE())
+                .build();
+
+        network.initialize();
+
+        SimpleMatrix X = new SimpleMatrix(4, 16, true,
+                new double[]{ 0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
+                              0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,
+                              0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,
+                              0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1 });
+        X.print();
+
+        // labels
+        SimpleMatrix Y = new SimpleMatrix(1, 16, true,
+                new double[]{ 0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0 });
         Y.print();
 
         // initial cost
