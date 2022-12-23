@@ -1,10 +1,7 @@
 package com.jamesswafford.ml.nn.cost;
 
+import org.ejml.simple.SimpleMatrix;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
@@ -16,27 +13,50 @@ public class MSETests {
     @Test
     public void cost() {
 
-        assertEquals(mse.cost(Collections.emptyList(), Collections.emptyList()), Collections.emptyList());
+        // labels for 3 outputs and 4 examples
+        SimpleMatrix Y = new SimpleMatrix(3, 4, true,
+                new double[]{ 0, 1, 0, 1,
+                              0, 1, 0, 1,
+                              0, 1, 0, 1});
 
-        List<Double> predictions = Arrays.asList(0.8, 0.4, 0.1);
-        List<Double> labels = Arrays.asList(1.0, 1.0, 0.0);
 
-        assertDoubleEquals(Arrays.asList(0.0, 0.0, 0.0), mse.cost(predictions, predictions));
-        assertDoubleEquals(Arrays.asList(0.04, 0.36, 0.01), mse.cost(predictions, labels));
-    }
+        SimpleMatrix P = new SimpleMatrix(3, 4, true,
+                new double[]{ 0, 1, 0, 1,
+                              0, 1, 0, 1,
+                              0, 1, 0, 1});
 
-    @Test
-    public void averageCostFromSingleTrainingExample() {
-        List<Double> predictions = Arrays.asList(0.8, 0.4, 0.1);
-        List<Double> labels = Arrays.asList(1.0, 1.0, 0.0);
+        double cost = mse.cost(P, Y);
+        assertDoubleEquals(0.0, cost);
 
-        assertDoubleEquals(0.0, mse.averageCost(predictions, predictions));
-        assertDoubleEquals((0.04+0.36+0.01)/3.0, mse.averageCost(predictions, labels) );
-    }
+        // inverted - each of the 4 examples is completely wrong and gets a score of 3.0 each
+        SimpleMatrix P2 = new SimpleMatrix(3, 4, true,
+                new double[]{ 1, 0, 1, 0,
+                              1, 0, 1, 0,
+                              1, 0, 1, 0});
 
-    @Test
-    public void averageCostFromBatch() {
+        double cost2 = mse.cost(P2, Y);
+        assertDoubleEquals(3.0, cost2);
 
-        // TODO
+        // just one output is 50% wrong.  the other two are correct.
+        // the sum of errors for that column is 0.25 * 3 = 0.75.
+        // 0.75 / 4 = 0.1875
+        SimpleMatrix P3 = new SimpleMatrix(3, 4, true,
+                new double[]{ 0, 0.5, 0, 1,
+                              0, 0.5, 0, 1,
+                              0, 0.5, 0, 1});
+
+        double cost3 = mse.cost(P3, Y);
+        assertDoubleEquals(0.1875, cost3);
+
+        // two outputs are 50% wrong.  the other two are correct.
+        // the sum of errors is now 1.5.
+        // 1.5 / 4 = 0.375
+        SimpleMatrix P4 = new SimpleMatrix(3, 4, true,
+                new double[]{ 0.5, 0.5, 0, 1,
+                              0.5, 0.5, 0, 1,
+                              0.5, 0.5, 0, 1});
+
+        double cost4 = mse.cost(P4, Y);
+        assertDoubleEquals(0.375, cost4);
     }
 }

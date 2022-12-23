@@ -37,7 +37,7 @@ public class Layer {
         w = new SimpleMatrix(numUnits, numUnitsPreviousLayer);
         for (int r=0;r<numUnits;r++) {
             for (int c=0;c<numUnitsPreviousLayer;c++) {
-                w.set(r, c, rand.nextDouble());
+                w.set(r, c, rand.nextDouble()/*-0.5*/);
             }
         }
         b = new SimpleMatrix(numUnits, 1);

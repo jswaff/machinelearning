@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class NetworkTests {
 
     @Test
@@ -31,16 +29,7 @@ public class NetworkTests {
                 new double[]{ 0, 0, 1, 0 });
         Y.print();
 
-        // initial cost
-
-        // train the network
-        network.train(X, Y, 1000);
-
-        SimpleMatrix P = network.predict(X);
-        P.print();
-
-        // the cost should be close to 0
-
+        train(network, X, Y);
     }
 
     @Test
@@ -66,16 +55,7 @@ public class NetworkTests {
                 new double[]{ 0, 1, 0, 1});
         Y.print();
 
-        // initial cost
-
-        // train the network
-        network.train(X, Y, 1000);
-
-        SimpleMatrix P = network.predict(X);
-        P.print();
-
-        // the cost should be close to 0
-
+        train(network, X, Y);
     }
 
     @Test
@@ -107,16 +87,7 @@ public class NetworkTests {
                 new double[]{ 0,0,0,0,1,0,0,0 });
         Y.print();
 
-        // initial cost
-
-        // train the network
-        network.train(X, Y, 100000);
-
-        SimpleMatrix P = network.predict(X);
-        P.print();
-
-        // the cost should be close to 0
-
+        train(network, X, Y);
     }
 
     @Test
@@ -146,16 +117,23 @@ public class NetworkTests {
                 new double[]{ 0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0 });
         Y.print();
 
+        train(network, X, Y);
+    }
+
+    private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {
         // initial cost
+        SimpleMatrix P1 = network.predict(X);
+        double cost = network.cost(P1, Y);
+        System.out.println("initial cost: " + cost);
 
         // train the network
         network.train(X, Y, 100000);
 
-        SimpleMatrix P = network.predict(X);
-        P.print();
-
-        // the cost should be close to 0
-
+        // cost after training
+        SimpleMatrix P2 = network.predict(X);
+        P2.print();
+        cost = network.cost(P2, Y);
+        System.out.println("final cost: " + cost);
     }
 
 }

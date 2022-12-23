@@ -69,6 +69,8 @@ public class Network {
                 }
                 layer.updateWeightsAndBias(dW_db.getValue0(), dW_db.getValue1());
             }
+
+            //System.out.println("\tcost(" + i + "): " + cost(predict(X), Y));
         }
     }
 
@@ -88,4 +90,7 @@ public class Network {
         return A;
     }
 
+    public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
+        return costFunction.cost(predictions, labels);
+    }
 }
