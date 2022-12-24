@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
+
 public class NetworkTests {
 
     @Test
@@ -118,6 +120,72 @@ public class NetworkTests {
         Y.print();
 
         train(network, X, Y);
+    }
+
+    @Test
+    // example problem from TDS article by Tobias Hill
+    // https://towardsdatascience.com/part-1-a-neural-network-from-scratch-foundation-e2d119df0f40
+    public void exampleFromTDS() {
+
+        Layer hidden = new Layer(2, new Sigmoid());
+
+        Layer output = new Layer(2, new Sigmoid());
+
+        Network network = Network.builder()
+                .numInputUnits(2)
+                .layers(List.of(
+                        hidden,
+                        output
+                ))
+                .costFunction(new MSE())
+                .build();
+        network.initialize();
+
+        hidden.setWeight(0, 0, 0.3);
+        hidden.setWeight(0, 1, -0.4);
+        hidden.setBias(0, 0.25);
+
+        hidden.setWeight(1, 0, 0.2);
+        hidden.setWeight(1, 1, 0.6);
+        hidden.setBias(1, 0.45);
+
+        output.initialize(2);
+        output.setWeight(0, 0, 0.7);
+        output.setWeight(0, 1, 0.5);
+        output.setBias(0, 0.15);
+
+        output.setWeight(1, 0, -0.3);
+        output.setWeight(1, 1, -0.1);
+        output.setBias(1, 0.35);
+
+        SimpleMatrix X = new SimpleMatrix(2, 1, true, new double[] {2, 3});
+        SimpleMatrix Y = new SimpleMatrix(2, 1, true, new double[] {1, 0.2});
+
+        SimpleMatrix P = network.predict(X);
+        P.print();
+        assertDoubleEquals(0.712257432, P.get(0,0));
+        assertDoubleEquals(0.533097573, P.get(1, 0));
+
+        double cost = network.cost(P, Y);
+        System.out.println("cost: " + cost);
+        assertDoubleEquals(0.1937497789, cost);
+
+        // Oh1: 0.41338242108266987
+        double Oh1 = output.getX().get(0,0);
+        System.out.println("Oh1: " + Oh1);
+        output.getZ().print();
+        // TODO: 0.220793265
+
+        // train
+        network.train(X, Y, 1);
+        SimpleMatrix P2 = network.predict(X);
+        // expect: y = [0.719269360605435 0.524309343003261]
+        P2.print();
+
+        double cost2 = network.cost(P2, Y);
+        // expect: 0.1839862418540884.
+        System.out.println("cost2: " + cost2);
+        //assertDoubleEquals(0.1937497789, cost);
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {

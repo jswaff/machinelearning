@@ -10,6 +10,6 @@ public class Sigmoid implements ActivationFunction {
     @Override
     public Double derivativeFunc(Double z) {
         double x = func(z);
-        return x * (1 - x);
+        return x * (1.0 - x);
     }
 }

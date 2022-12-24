@@ -56,21 +56,41 @@ public class Network {
             }
 
             // backwards propagation
-            SimpleMatrix dA = A.minus(Y);
+
+            // we want to find the derivative of the cost function with respect to each weight and bias
+            // by the chain rule in calculus, dC/dW = dZ/dW * dA/dZ * dC/dA
+            // dZ/dW: how much the input to a neuron changes as the weight changes
+            //        this is the output of the previous layer
+            // dA/dZ: how much the output to the neuron changes as the input changes
+            //        this is the derivative of the activation function
+            // dC/dA: how much the cost changes as the output to the neuron changes
+            //        for the last layer this is simply the derivative of the cost function
+            //        for previous layers it's more complex.  the change in weight will impact the output of
+            //        all neurons in the next layer, so the change to the cost function is the sum
+            //        of the change with respect to each neuron individually.
+
+            SimpleMatrix dCdA = A.minus(Y).divide(0.5); // derivative of quadratic cost function is 2(A-Y)
 
             for (int L=0;L< reverseLayers.size();L++) {
                 Layer layer = reverseLayers.get(L);
-                Pair<SimpleMatrix, SimpleMatrix> dW_db = layer.backProp(dA);
+                Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdB = layer.calculateUpdatedWeightsAndBiases(dCdA);
+                SimpleMatrix dCdW = dCdW_dCdB.getValue0();
+                SimpleMatrix dCdb = dCdW_dCdB.getValue1();
+
+                // update the dCdA component of the backprop calculation for the previous layer (l-1)
                 if (L < reverseLayers.size()-1) {
-                    // calculate dA for previous layer
-                    Layer previousLayer = reverseLayers.get(L+1);
-                    SimpleMatrix Z_prime = previousLayer.getZPrime();
-                    dA = layer.getWeights().transpose().mult(dA).elementMult(Z_prime);
+                    SimpleMatrix dAdZ = layer.calculateZPrime();
+                    SimpleMatrix dCdZ = dCdA.elementMult(dAdZ);
+                    dCdA = layer.getWeights().transpose().mult(dCdZ);
                 }
-                layer.updateWeightsAndBias(dW_db.getValue0(), dW_db.getValue1());
+
+                // update weights and biases
+                // TODO: consider doing this after the entire back prop operation is complete
+                // particularly when doing mini-batches: should they all process before doing any updates?
+                layer.updateWeightsAndBias(dCdW, dCdb);
             }
 
-            //System.out.println("\tcost(" + i + "): " + cost(predict(X), Y));
+            System.out.println("\tcost(" + i + "): " + cost(predict(X), Y));
         }
     }
 

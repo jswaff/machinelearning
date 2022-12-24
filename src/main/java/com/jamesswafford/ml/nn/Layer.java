@@ -37,7 +37,7 @@ public class Layer {
         w = new SimpleMatrix(numUnits, numUnitsPreviousLayer);
         for (int r=0;r<numUnits;r++) {
             for (int c=0;c<numUnitsPreviousLayer;c++) {
-                w.set(r, c, rand.nextDouble()/*-0.5*/);
+                w.set(r, c, rand.nextDouble()-0.5);
             }
         }
         b = new SimpleMatrix(numUnits, 1);
@@ -66,7 +66,11 @@ public class Layer {
         b.set(unit, 0, val);
     }
 
-    public SimpleMatrix getZPrime() {
+    public SimpleMatrix getX() { return X; }
+
+    public SimpleMatrix getZ() { return Z; }
+
+    public SimpleMatrix calculateZPrime() {
         SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
         // unfortunately no broadcast operator
         for (int r=0;r<Z_prime.numRows();r++) {
@@ -108,27 +112,44 @@ public class Layer {
     }
 
     /**
-     * Perform the backwards propagation step using gradient descent.
-     * Note this step does NOT update weights and biases.
+     * Calculate updated weights and biases.  Note this step does NOT update weights and biases.
      *
-     * @param A_error the error of the activation function
+     * @param dCdA the derivative of the cost function with respect to the output (activation)
      *
-     * @return dW, db
+     * @return dCdW - the derivative of the cost function with respect to change in weights,
+     *         dCdB - the derivative of the cost function with respect to change in biases
      */
-    public Pair<SimpleMatrix, SimpleMatrix> backProp(SimpleMatrix A_error) {
+    public Pair<SimpleMatrix, SimpleMatrix> calculateUpdatedWeightsAndBiases(SimpleMatrix dCdA) {
+
+        // we have dC/dA (how much the cost changes with respect to the output)
+        // we need dZ/dW (how much input changes with respect to changes in weights), and
+        // we need dA/dZ (how much output changes with respect to input)
+        // From there, we can apply the chain rule to calculate:
+        // dC/dW = dZ/dW * dA/dZ * dC/dA
+
+        SimpleMatrix dAdZ = calculateZPrime();
+        SimpleMatrix dCdZ = dCdA.elementMult(dAdZ);
 
         // the adjustment to the weights is proportional to how active the feature was
         int m = X.numCols();
-        SimpleMatrix dW = A_error.mult(this.X.transpose()).divide(m);
+
+        SimpleMatrix dCdW = dCdZ.mult(this.X.transpose()).divide(m);
 
         // adjust the bias
-        double dbVal = A_error.elementSum() / m;
-        SimpleMatrix db = new SimpleMatrix(b.numRows(), 1);
+        // dC/db = dZ/db * dA/dZ * dC/dA
+        //       = dZ/db * dC/dZ
+        //       = 1 * dC/dZ
+        // dZ/db is just 1 since the change to the bias doesn't depend on the input
+        SimpleMatrix dCdb = new SimpleMatrix(b.numRows(), 1);
         for (int r=0;r<b.numRows();r++) {
-            db.set(r, 0, dbVal);
+            double dbVal = 0.0;
+            for (int c=0;c<dCdZ.numCols();c++) {
+                dbVal += dCdZ.get(r, c);
+            }
+            dCdb.set(r, 0, dbVal / m);
         }
 
-        return new Pair<>(dW, db);
+        return new Pair<>(dCdW, dCdb);
     }
 
     /**
