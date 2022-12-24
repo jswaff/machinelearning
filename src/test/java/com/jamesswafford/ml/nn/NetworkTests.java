@@ -162,7 +162,6 @@ public class NetworkTests {
         SimpleMatrix Y = new SimpleMatrix(2, 1, true, new double[] {1, 0.2});
 
         SimpleMatrix P = network.predict(X);
-        P.print();
         assertDoubleEquals(0.712257432, P.get(0,0));
         assertDoubleEquals(0.533097573, P.get(1, 0));
 
@@ -170,22 +169,21 @@ public class NetworkTests {
         System.out.println("cost: " + cost);
         assertDoubleEquals(0.1937497789, cost);
 
-        // Oh1: 0.41338242108266987
-        double Oh1 = output.getX().get(0,0);
-        System.out.println("Oh1: " + Oh1);
+        System.out.println("dZdW: " + output.getX().get(0,0)); // Oh1: 0.41338242108266987
+        System.out.println("Z: ");  // [ .90637319  .132584175 ]
         output.getZ().print();
-        // TODO: 0.220793265
+        // In the TDS article, Toby shows 0.220793265 here.  It appears he is actually calculating g'(A), not g'(Z)
+        System.out.println("dAdZ: " + output.calculateZPrime()); // Z': 0.220793265
 
         // train
         network.train(X, Y, 1);
         SimpleMatrix P2 = network.predict(X);
-        // expect: y = [0.719269360605435 0.524309343003261]
-        P2.print();
+        //P2.print();    // expect: y = [0.719269360605435 0.524309343003261]
+
 
         double cost2 = network.cost(P2, Y);
         // expect: 0.1839862418540884.
-        System.out.println("cost2: " + cost2);
-        //assertDoubleEquals(0.1937497789, cost);
+        //System.out.println("cost2: " + cost2);
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {

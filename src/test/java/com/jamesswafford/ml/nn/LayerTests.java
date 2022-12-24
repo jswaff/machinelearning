@@ -140,7 +140,6 @@ public class LayerTests {
         // the delta to the bias is dC/dZ
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
-        dCdb.print();
         assertDoubleEquals(new double[]{0,2,-2,1}, dCdb.getDDRM().getData());
     }
 
@@ -184,21 +183,20 @@ public class LayerTests {
         assertDoubleEquals(0.07*2, A.get(3, 1));
 
         // back prop
+        // the second input has no error, so the adjustments should be half of the first problem
         SimpleMatrix dCdA = new SimpleMatrix(4, 2, false,
                 new double[] { 0, 1, -1, 0.5, 0, 0, 0, 0 }); // no error second input
         Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateUpdatedWeightsAndBiases(dCdA);
         SimpleMatrix dCdW = dCdW_dCdb.getValue0();
         SimpleMatrix dCdb = dCdW_dCdb.getValue1();
 
-        // the delta weights should be the same shape as the weights matrix
         assertEquals(4, dCdW.numRows());
         assertEquals(3, dCdW.numCols());
-        //assertDoubleEquals(new double[]{0,0,0,.05,.15,-.1,-.05,-.15,.1,.025,.075,-.05},dCdW.getDDRM().getData());
+        assertDoubleEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},dCdW.getDDRM().getData());
 
-        // the delta to the bias is the sum over all errors (averaged over all examples)
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
-        //assertDoubleEquals(new double[]{.25,.25,.25,.25}, db.getDDRM().getData()); FIXME
+        assertDoubleEquals(new double[]{0,1,-1,0.5}, dCdb.getDDRM().getData());
     }
 
     @Test
