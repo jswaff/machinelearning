@@ -90,7 +90,7 @@ public class Network {
                 layer.updateWeightsAndBias(dCdW, dCdb);
             }
 
-            //System.out.println("\tcost(" + i + "): " + cost(predict(X), Y));
+            System.out.println("\tcost(" + i + "): " + cost(predict(X), Y));
         }
     }
 

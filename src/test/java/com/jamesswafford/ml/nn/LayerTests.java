@@ -220,11 +220,11 @@ public class LayerTests {
 
         layer.updateWeightsAndBias(dW, dB);
 
-        assertDoubleEquals(w_0_0 - 0.1, layer.getWeight(0, 0));
-        assertDoubleEquals(w_1_1 - 0.2, layer.getWeight(1, 1));
-        assertDoubleEquals(w_2_2 - 0.3, layer.getWeight(2, 2));
+        assertDoubleEquals(w_0_0 - 0.01, layer.getWeight(0, 0));
+        assertDoubleEquals(w_1_1 - 0.02, layer.getWeight(1, 1));
+        assertDoubleEquals(w_2_2 - 0.03, layer.getWeight(2, 2));
 
-        assertDoubleEquals(b_0 - 0.06, layer.getBias(0));
+        assertDoubleEquals(b_0 - 0.006, layer.getBias(0));
     }
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {

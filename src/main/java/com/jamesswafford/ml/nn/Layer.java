@@ -159,7 +159,7 @@ public class Layer {
      * @param db - deltas for biases
      */
     public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
-        w = w.minus(dW);
-        b = b.minus(db);
+        w = w.minus(dW.divide(10));
+        b = b.minus(db.divide(10));
     }
 }
