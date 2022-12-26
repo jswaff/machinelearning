@@ -38,22 +38,25 @@ public class Network {
      * Train the network
      * Note- the network should already be initialized.
      *
-     * @param X - input matrix of shape n x m, where n is the number of features and m is the number of training examples
-     * @param Y - labels, of shape L x m, where L is the number of outputs and m is the number of training examples
+     * @param X_train - input matrix of shape n x m, where n is the number of features and m is the number of training examples
+     * @param Y_train - labels, of shape L x m, where L is the number of outputs and m is the number of training examples
      * @param numEpochs - the number of epochs
      * @param miniBatchSize - the size of the mini batches.  Note the last batch may be smaller.
      * @param learningRate - the learning rate.
+     * @param X_test - test samples (optional).  If provided, the cost will be output every 10 epochs.
+     * @param Y_test - test labels (optional)
      */
-    public void train(SimpleMatrix X, SimpleMatrix Y, int numEpochs, int miniBatchSize, double learningRate) {
-
-        int m = X.numCols(); // number of samples
+    public void train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
+                      SimpleMatrix X_test, SimpleMatrix Y_test)
+    {
+        int m = X_train.numCols(); // number of training samples
 
         List<Layer> reverseLayers = new ArrayList<>(layers);
         Collections.reverse(reverseLayers);
 
         // split the data up into mini-batches
         int numMiniBatches = m / miniBatchSize;
-        if ((X.numCols() % m) != 0) {
+        if ((X_train.numCols() % m) != 0) {
             numMiniBatches++;
         }
 
@@ -61,7 +64,7 @@ public class Network {
 
             for (int j=0;j<numMiniBatches;j++) {
 
-                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = DataSplitter.getMiniBatch(X, Y, j, miniBatchSize);
+                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = DataSplitter.getMiniBatch(X_train, Y_train, j, miniBatchSize);
                 SimpleMatrix X_batch = X_Y_batch.getValue0();
                 SimpleMatrix Y_batch = X_Y_batch.getValue1();
 
@@ -107,8 +110,8 @@ public class Network {
                 }
             }
 
-            if ((i % 10) == 0) {
-                System.out.println("\ttraining cost(" + i + "): " + cost(predict(X), Y));
+            if (X_test != null && Y_test != null && (i % 10) == 0) {
+                System.out.println("\tcost(" + i + "): " + cost(predict(X_test), Y_test));
             }
         }
     }
@@ -129,6 +132,14 @@ public class Network {
         return A;
     }
 
+    /**
+     * Calculate the cost (error) of the predictions vs the "ground truth" labels.
+     *
+     * @param predictions - network output
+     * @param labels - ground truth
+     *
+     * @return - the cost
+     */
     public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
         return costFunction.cost(predictions, labels);
     }
