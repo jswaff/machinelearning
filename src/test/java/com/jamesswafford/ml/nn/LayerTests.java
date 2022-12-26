@@ -205,9 +205,9 @@ public class LayerTests {
 
         SimpleMatrix dW = new SimpleMatrix(4, 3, true,
                 new double[]{0.1, 0.1, 0.1,
-                             0.2, 0.2, 0.2,
-                             0.3, 0.3, 0.3,
-                             0.4, 0.4, 0.4 });
+                        0.2, 0.2, 0.2,
+                        0.3, 0.3, 0.3,
+                        0.4, 0.4, 0.4 });
 
         SimpleMatrix dB = new SimpleMatrix(4, 1, true,
                 new double[] { 0.06, 0.06, 0.06, 0.06} );
@@ -218,14 +218,14 @@ public class LayerTests {
 
         double b_0 = layer.getBias(0);
 
-        layer.updateWeightsAndBias(dW, dB);
+        layer.updateWeightsAndBias(dW, dB, 0.1);
 
         assertDoubleEquals(w_0_0 - 0.01, layer.getWeight(0, 0));
         assertDoubleEquals(w_1_1 - 0.02, layer.getWeight(1, 1));
         assertDoubleEquals(w_2_2 - 0.03, layer.getWeight(2, 2));
-
         assertDoubleEquals(b_0 - 0.006, layer.getBias(0));
     }
+
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {
         Layer layer = new Layer(4, activationFunction);
