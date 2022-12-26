@@ -157,9 +157,12 @@ public class Layer {
      *
      * @param dW - deltas for weights
      * @param db - deltas for biases
+     * @param  learningRate - the learning rate
      */
-    public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db) {
-        w = w.minus(dW.divide(10));
-        b = b.minus(db.divide(10));
+    public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db, double learningRate) {
+        // no multiply operator
+        double reciprocalLearningRate = 1.0 / learningRate;
+        w = w.minus(dW.divide(reciprocalLearningRate));
+        b = b.minus(db.divide(reciprocalLearningRate));
     }
 }

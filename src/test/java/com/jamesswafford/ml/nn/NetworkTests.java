@@ -176,7 +176,7 @@ public class NetworkTests {
         System.out.println("dAdZ: " + output.calculateZPrime()); // Z': 0.220793265
 
         // train
-        network.train(X, Y, 1);
+        network.train(X, Y, 1, 1, 1.0, null, null);
         SimpleMatrix P2 = network.predict(X);
         //P2.print();    // expect: y = [0.719269360605435 0.524309343003261]
 
@@ -193,7 +193,7 @@ public class NetworkTests {
         System.out.println("initial cost: " + cost);
 
         // train the network
-        network.train(X, Y, 100000);
+        network.train(X, Y, 100000, X.numCols(), 1.0, null, null);
 
         // cost after training
         SimpleMatrix P2 = network.predict(X);
