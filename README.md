@@ -28,7 +28,7 @@ Build a neural network using the builder interface:
 
 ```
 
-In this example, we have a four layer network - 1 input layer, 2 hidden layers, and the output layer.  Note the input layer is implicit, and not included in the list of layers.  This network has 120 inputs and uses the "Mean Squred Error" cost function.  The first hidden layer has 20 outputs and uses the Rectified Linear Unit activation function.
+In this example, we have a four layer network - 1 input layer, 2 hidden layers, and the output layer.  Note the input layer is implicit, and not included in the list of layers.  This network has 120 inputs and uses the "Mean Squared Error" cost function.  The first hidden layer has 20 outputs and uses the Rectified Linear Unit activation function.
 
 Once the network is built, you need to initialize it:
 
@@ -48,13 +48,15 @@ TODO
 TODO
 
 
-### To do
+### To Do
 
 The implementation still lacks a few basic features that will be added over the coming weeks
 
+* Softmax activation function
 * store and load network configuration, including weights
 * support for parallel processing
 * abstract away the EJML stuff so client doesn't need that import
 * regularization - L2, possibly drop out
+* support for other cost functions, i.e. cross-entropy
 * support for other initializers, i.e. Xavier
 * support for other optimizers, i.e. Adam
