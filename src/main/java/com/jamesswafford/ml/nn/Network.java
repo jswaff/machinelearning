@@ -117,7 +117,7 @@ public class Network {
     }
 
     /**
-     * Predict the output
+     * Predict the correct labels
      *
      * @param X - input matrix of shape n x m, where n is the number of features and m is the number of training examples
      * @return prediction matrix, of shape L x m, where L is the number of outputs and m is the number of training examples
