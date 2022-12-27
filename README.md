@@ -10,6 +10,7 @@ This library is intended to be a playground for learning a number of machine lea
 
 ## Neural Networks
 
+Currently only fully connected networks are supported.  The optimizer uses gradient descent, either stochastic or (mini)batches.  The implementation is vectorized, meaning mini-batches are processed in one pass to take advantage of the capabilities of linear algebra libraries.  
 
 ### Building a neural network
 
@@ -50,9 +51,7 @@ TODO
 
 ### To Do
 
-The implementation still lacks a few basic features that will be added over the coming weeks
-
-* Softmax activation function
+* additional activation functions, i.e. tanh, softmax
 * abstract away the EJML (linear algebra library) stuff from the interface
 * early stopping criteria
 * store and load network configuration
@@ -60,3 +59,5 @@ The implementation still lacks a few basic features that will be added over the 
 * support for other cost functions, i.e. cross-entropy
 * support for other initializers, i.e. Xavier
 * support for other optimizers, i.e. Adam
+* convolutional nets
+* recurrent nets
