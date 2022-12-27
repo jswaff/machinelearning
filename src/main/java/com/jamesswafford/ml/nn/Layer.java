@@ -18,9 +18,16 @@ public class Layer {
     private SimpleMatrix w;  // weights vector, j x k where j = units this layer, k = prev. layer
     private SimpleMatrix b;  // bias column vector, j x 1
 
+    // cached during forward pass
     private SimpleMatrix X;  // input from previous layer
     private SimpleMatrix Z;  // the linear computation portion of the output
     private SimpleMatrix A;  // output of this layer -- g(Z)
+
+    // cached during backward pass
+    private SimpleMatrix dAdZ;
+    private SimpleMatrix dCdZ;
+    private SimpleMatrix dCdW;
+    private SimpleMatrix dCdb;
 
     /**
      * Initialize this layer of the network by initializing the weights to small random values and
@@ -69,6 +76,16 @@ public class Layer {
     public SimpleMatrix getX() { return X; }
 
     public SimpleMatrix getZ() { return Z; }
+
+    public SimpleMatrix getA() { return A; }
+
+    public SimpleMatrix get_dAdZ() { return dAdZ; }
+
+    public SimpleMatrix get_dCdZ() { return dCdZ; }
+
+    public SimpleMatrix get_dCdW() { return dCdW; }
+
+    public SimpleMatrix get_dCdb() { return dCdb; }
 
     public SimpleMatrix calculateZPrime() {
         SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
@@ -121,26 +138,25 @@ public class Layer {
      */
     public Pair<SimpleMatrix, SimpleMatrix> calculateUpdatedWeightsAndBiases(SimpleMatrix dCdA) {
 
-        // we have dC/dA (how much the cost changes with respect to the output)
+        // we are given dC/dA (how much the cost changes with respect to the output)
         // we need dZ/dW (how much input changes with respect to changes in weights), and
         // we need dA/dZ (how much output changes with respect to input)
         // From there, we can apply the chain rule to calculate:
         // dC/dW = dZ/dW * dA/dZ * dC/dA
 
-        SimpleMatrix dAdZ = calculateZPrime();
-        SimpleMatrix dCdZ = dCdA.elementMult(dAdZ);
+        dAdZ = calculateZPrime();
+        dCdZ = dCdA.elementMult(dAdZ);
 
         // the adjustment to the weights is proportional to how active the feature was
         int m = X.numCols();
-
-        SimpleMatrix dCdW = dCdZ.mult(this.X.transpose()).divide(m);
+        dCdW = dCdZ.mult(this.X.transpose()).divide(m);
 
         // adjust the bias
         // dC/db = dZ/db * dA/dZ * dC/dA
         //       = dZ/db * dC/dZ
         //       = 1 * dC/dZ
         // dZ/db is just 1 since the change to the bias doesn't depend on the input
-        SimpleMatrix dCdb = new SimpleMatrix(b.numRows(), 1);
+        dCdb = new SimpleMatrix(b.numRows(), 1);
         for (int r=0;r<b.numRows();r++) {
             double dbVal = 0.0;
             for (int c=0;c<dCdZ.numCols();c++) {

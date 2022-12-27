@@ -89,25 +89,23 @@ public class Network {
                 //        all neurons in the next layer, so the change to the cost function is the sum
                 //        of the change with respect to each neuron individually.
 
-                SimpleMatrix dCdA = A.minus(Y_batch).divide(0.5); // derivative of quadratic cost function is 2(A-Y)
+                SimpleMatrix dCdA = A.minus(Y_batch);
 
                 for (int L = 0; L < reverseLayers.size(); L++) {
                     Layer layer = reverseLayers.get(L);
-                    Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdB = layer.calculateUpdatedWeightsAndBiases(dCdA);
-                    SimpleMatrix dCdW = dCdW_dCdB.getValue0();
-                    SimpleMatrix dCdb = dCdW_dCdB.getValue1();
+                    layer.calculateUpdatedWeightsAndBiases(dCdA);
 
-                    // update the dCdA component of the backprop calculation for the previous layer (l-1)
+                    // update the dCdA component for the previous layer (l-1)
                     if (L < reverseLayers.size() - 1) {
-                        SimpleMatrix dAdZ = layer.calculateZPrime();
-                        SimpleMatrix dCdZ = dCdA.elementMult(dAdZ);
+                        SimpleMatrix dCdZ = layer.get_dCdZ();
                         dCdA = layer.getWeights().transpose().mult(dCdZ);
                     }
-
-                    // update weights and biases
-                    double normalizedLearningRate = learningRate / X_batch.numCols();
-                    layer.updateWeightsAndBias(dCdW, dCdb, normalizedLearningRate);
                 }
+
+                // update the weights and biases
+                double normalizedLearningRate = learningRate / X_batch.numCols();
+                layers.forEach(layer ->
+                    layer.updateWeightsAndBias(layer.get_dCdW(), layer.get_dCdb(), normalizedLearningRate));
             }
 
             if (X_test != null && Y_test != null && (i % 10) == 0) {

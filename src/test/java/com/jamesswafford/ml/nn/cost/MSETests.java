@@ -35,7 +35,7 @@ public class MSETests {
                               1, 0, 1, 0});
 
         double cost2 = mse.cost(P2, Y);
-        assertDoubleEquals(3.0, cost2);
+        assertDoubleEquals(3.0/2, cost2);
 
         // just one output is 50% wrong.  the other two are correct.
         // the sum of errors for that column is 0.25 * 3 = 0.75.
@@ -46,7 +46,7 @@ public class MSETests {
                               0, 0.5, 0, 1});
 
         double cost3 = mse.cost(P3, Y);
-        assertDoubleEquals(0.1875, cost3);
+        assertDoubleEquals(0.1875/2, cost3);
 
         // two outputs are 50% wrong.  the other two are correct.
         // the sum of errors is now 1.5.
@@ -57,6 +57,6 @@ public class MSETests {
                               0.5, 0.5, 0, 1});
 
         double cost4 = mse.cost(P4, Y);
-        assertDoubleEquals(0.375, cost4);
+        assertDoubleEquals(0.375/2, cost4);
     }
 }

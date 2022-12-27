@@ -19,7 +19,8 @@ public class MSE implements CostFunction {
                     labels.numCols() + "; predictions: " + predictions.numRows() + " x " + predictions.numCols());
         }
 
-        SimpleMatrix e = predictions.minus(labels).elementPower(2);
+        // 1/2 constant to cancel out the exponent when differentiating
+        SimpleMatrix e = predictions.minus(labels).elementPower(2).divide(2.0);
 
         return e.elementSum() / predictions.numCols();
     }
