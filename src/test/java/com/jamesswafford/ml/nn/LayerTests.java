@@ -4,7 +4,6 @@ import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -136,14 +135,28 @@ public class LayerTests {
             -.2         -.6          .4
              .1          .3         -.2
          */
-        assertDoubleEquals(new double[]{0,0,0,.2,.6,-.4,-.2,-.6,.4,.1,.3,-.2},dCdW.getDDRM().getData());
+        assertDoubleEquals(new double[]{ 0, 0,  0,
+                                        .2,.6,-.4,
+                                       -.2,-.6,.4,
+                                        .1,.3,-.2},dCdW.getDDRM().getData());
 
         // the delta to the bias is dC/dZ
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
         assertDoubleEquals(new double[]{0,2,-2,1}, dCdb.getDDRM().getData());
 
-        // TODO: update weights and biases
+        // update weights and biases
+        layer.updateWeightsAndBias(0.5);
+        assertDoubleEquals(new double[]{
+                .5-0*.5 ,.3-0*.5, .1-0*.5,
+                .9-.2*.5,.5-.6*.5,.65+.4*.5,
+                1.2+.2*.5,.2+.6*.5,-.3-.4*.5,
+                .15-.1*.5,.4-.3*.5,.4+.2*.5}, layer.getWeights().getDDRM().getData());
+        assertDoubleEquals(new double[]{
+                .05-0*.5,
+                .05-2*.5,
+                .05+2*.5,
+                .05-1*.5}, layer.getBiases().getDDRM().getData());
     }
 
     @Test
@@ -201,7 +214,18 @@ public class LayerTests {
         assertEquals(1, dCdb.numCols());
         assertDoubleEquals(new double[]{0,1,-1,0.5}, dCdb.getDDRM().getData());
 
-        // TODO: update weights and biases
+        // update weights and biases
+        layer.updateWeightsAndBias(0.1);
+        assertDoubleEquals(new double[]{
+                .5-0*.1 ,.3-0*.1, .1-0*.1,
+                .9-.1*.1,.5-.3*.1,.65+.2*.1,
+                1.2+.1*.1,.2+.3*.1,-.3-.2*.1,
+                .15-.05*.1,.4-.15*.1,.4+.1*.1}, layer.getWeights().getDDRM().getData());
+        assertDoubleEquals(new double[]{
+                .05-0*.1,
+                .05-1*.1,
+                .05+1*.1,
+                .05-.5*.1}, layer.getBiases().getDDRM().getData());
     }
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {

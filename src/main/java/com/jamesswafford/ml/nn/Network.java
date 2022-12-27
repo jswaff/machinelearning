@@ -1,7 +1,6 @@
 package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.cost.CostFunction;
-import com.jamesswafford.ml.nn.util.DataSplitter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,8 @@ import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 
 import java.util.*;
+
+import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 
 @RequiredArgsConstructor
 @Builder
@@ -64,7 +65,7 @@ public class Network {
 
             for (int j=0;j<numMiniBatches;j++) {
 
-                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = DataSplitter.getMiniBatch(X_train, Y_train, j, miniBatchSize);
+                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = getMiniBatch(X_train, Y_train, j, miniBatchSize);
                 SimpleMatrix X_batch = X_Y_batch.getValue0();
                 SimpleMatrix Y_batch = X_Y_batch.getValue1();
 
@@ -86,7 +87,7 @@ public class Network {
                     Layer layer = reverseLayers.get(L);
                     layer.calculateGradients(dCdA);
 
-                    // update the dCdA component for the previous layer (l-1)
+                    // set dC/dA for the previous layer (l-1)
                     if (L < reverseLayers.size() - 1) {
                         SimpleMatrix dCdZ = layer.get_dCdZ();
                         dCdA = layer.getWeights().transpose().mult(dCdZ);
@@ -129,5 +130,9 @@ public class Network {
      */
     public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
         return costFunction.cost(predictions, labels);
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
     }
 }
