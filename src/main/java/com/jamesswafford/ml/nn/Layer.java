@@ -160,7 +160,6 @@ public class Layer {
         b = b.minus(dCdb.divide(reciprocalLearningRate));
     }
 
-
     private SimpleMatrix calculateZPrime() {
         SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
         // unfortunately no broadcast operator
