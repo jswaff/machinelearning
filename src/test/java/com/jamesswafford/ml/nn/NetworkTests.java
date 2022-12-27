@@ -174,7 +174,12 @@ public class NetworkTests {
         // bias terms.  Comments confirm the correct value is 0.28047144679143016
         SimpleMatrix P2 = network.predict(X);
         double cost2 = network.cost(P2, Y);
+        System.out.println(cost2);
         assertDoubleEquals(0.28047144679143016, cost2);
+
+        // Matt gives an error of 3.510187782978859E-5 after 10,000 epochs, but again this is without updating biases
+        // with bias updates the cost is 2.4475622359322466E-6
+        // TODO: reset or copy the network and add that as a test
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {

@@ -2,7 +2,7 @@
 
 A machine learning library
 
-NOTE: WORK IN PROGRESS!  An initial release should be ready in the coming weeks.
+NOTE: WORK IN PROGRESS!  
 
 ## Introduction
 
@@ -53,10 +53,9 @@ TODO
 The implementation still lacks a few basic features that will be added over the coming weeks
 
 * Softmax activation function
-* store and load network configuration, including weights
-* support for parallel processing
+* abstract away the EJML (linear algebra library) stuff from the interface
 * early stopping criteria
-* abstract away the EJML stuff so client doesn't need that import
+* store and load network configuration
 * regularization - L2, possibly drop out
 * support for other cost functions, i.e. cross-entropy
 * support for other initializers, i.e. Xavier

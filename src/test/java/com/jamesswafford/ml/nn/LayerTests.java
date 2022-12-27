@@ -4,6 +4,7 @@ import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -122,7 +123,7 @@ public class LayerTests {
 
         // back prop
         SimpleMatrix dCdA = new SimpleMatrix(4, 1, true, new double[] { 0, 1, -1, 0.5 });
-        Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateUpdatedWeightsAndBiases(dCdA);
+        Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateGradients(dCdA);
         SimpleMatrix dCdW = dCdW_dCdb.getValue0();
         SimpleMatrix dCdb = dCdW_dCdb.getValue1();
 
@@ -141,6 +142,8 @@ public class LayerTests {
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
         assertDoubleEquals(new double[]{0,2,-2,1}, dCdb.getDDRM().getData());
+
+        // TODO: update weights and biases
     }
 
     @Test
@@ -186,7 +189,7 @@ public class LayerTests {
         // the second input has no error, so the adjustments should be half of the first problem
         SimpleMatrix dCdA = new SimpleMatrix(4, 2, false,
                 new double[] { 0, 1, -1, 0.5, 0, 0, 0, 0 }); // no error second input
-        Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateUpdatedWeightsAndBiases(dCdA);
+        Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateGradients(dCdA);
         SimpleMatrix dCdW = dCdW_dCdb.getValue0();
         SimpleMatrix dCdb = dCdW_dCdb.getValue1();
 
@@ -197,35 +200,9 @@ public class LayerTests {
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
         assertDoubleEquals(new double[]{0,1,-1,0.5}, dCdb.getDDRM().getData());
+
+        // TODO: update weights and biases
     }
-
-    @Test
-    void updateWeightsAndBiases() {
-        Layer layer = build3x4Layer(aFunc);
-
-        SimpleMatrix dW = new SimpleMatrix(4, 3, true,
-                new double[]{0.1, 0.1, 0.1,
-                        0.2, 0.2, 0.2,
-                        0.3, 0.3, 0.3,
-                        0.4, 0.4, 0.4 });
-
-        SimpleMatrix dB = new SimpleMatrix(4, 1, true,
-                new double[] { 0.06, 0.06, 0.06, 0.06} );
-
-        double w_0_0 = layer.getWeight(0, 0);
-        double w_1_1 = layer.getWeight(1, 1);
-        double w_2_2 = layer.getWeight(2, 2);
-
-        double b_0 = layer.getBias(0);
-
-        layer.updateWeightsAndBias(dW, dB, 0.1);
-
-        assertDoubleEquals(w_0_0 - 0.01, layer.getWeight(0, 0));
-        assertDoubleEquals(w_1_1 - 0.02, layer.getWeight(1, 1));
-        assertDoubleEquals(w_2_2 - 0.03, layer.getWeight(2, 2));
-        assertDoubleEquals(b_0 - 0.006, layer.getBias(0));
-    }
-
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {
         Layer layer = new Layer(4, activationFunction);

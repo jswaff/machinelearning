@@ -76,24 +76,15 @@ public class Network {
                 }
 
                 // backwards propagation
-
-                // we want to find the derivative of the cost function with respect to each weight and bias
-                // by the chain rule in calculus, dC/dW = dZ/dW * dA/dZ * dC/dA
-                // dZ/dW: how much the input to a neuron changes as the weight changes
-                //        this is the output of the previous layer
-                // dA/dZ: how much the output to the neuron changes as the input changes
-                //        this is the derivative of the activation function
-                // dC/dA: how much the cost changes as the output to the neuron changes
-                //        for the last layer this is simply the derivative of the cost function
-                //        for previous layers it's more complex.  the change in weight will impact the output of
-                //        all neurons in the next layer, so the change to the cost function is the sum
-                //        of the change with respect to each neuron individually.
-
+                // we update dC/dA as we go.  For the last layer, this is simply the derivative of the cost
+                // function.  It's more complex for hidden layers, as changes to the activation function will
+                // impact the output of each neuron in the next layer.
+                double normalizedLearningRate = learningRate / X_batch.numCols();
                 SimpleMatrix dCdA = A.minus(Y_batch);
 
                 for (int L = 0; L < reverseLayers.size(); L++) {
                     Layer layer = reverseLayers.get(L);
-                    layer.calculateUpdatedWeightsAndBiases(dCdA);
+                    layer.calculateGradients(dCdA);
 
                     // update the dCdA component for the previous layer (l-1)
                     if (L < reverseLayers.size() - 1) {
@@ -103,9 +94,7 @@ public class Network {
                 }
 
                 // update the weights and biases
-                double normalizedLearningRate = learningRate / X_batch.numCols();
-                layers.forEach(layer ->
-                    layer.updateWeightsAndBias(layer.get_dCdW(), layer.get_dCdb(), normalizedLearningRate));
+                layers.forEach(layer -> layer.updateWeightsAndBias(normalizedLearningRate));
             }
 
             if (X_test != null && Y_test != null && (i % 10) == 0) {
