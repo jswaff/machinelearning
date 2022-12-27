@@ -55,6 +55,7 @@ The implementation still lacks a few basic features that will be added over the 
 * Softmax activation function
 * store and load network configuration, including weights
 * support for parallel processing
+* early stopping criteria
 * abstract away the EJML stuff so client doesn't need that import
 * regularization - L2, possibly drop out
 * support for other cost functions, i.e. cross-entropy
