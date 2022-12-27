@@ -24,12 +24,9 @@ public class NetworkTests {
         SimpleMatrix X = new SimpleMatrix(2, 4, true,
                 new double[]{ 0, 0, 1, 1,
                               0, 1, 1, 0 });
-        X.print();
-
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 4, true,
                 new double[]{ 0, 0, 1, 0 });
-        Y.print();
 
         train(network, X, Y);
     }
@@ -50,12 +47,10 @@ public class NetworkTests {
         SimpleMatrix X = new SimpleMatrix(2, 4, true,
                 new double[]{ 0, 0, 1, 1,
                               0, 1, 1, 0 });
-        X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 4, true,
                 new double[]{ 0, 1, 0, 1});
-        Y.print();
 
         train(network, X, Y);
     }
@@ -82,12 +77,10 @@ public class NetworkTests {
                 new double[]{ 0,0,0,0,1,1,1,1,
                               0,0,1,1,0,0,1,1,
                               0,1,0,1,0,1,0,1 });
-        X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 8, true,
                 new double[]{ 0,0,0,0,1,0,0,0 });
-        Y.print();
 
         train(network, X, Y);
     }
@@ -112,21 +105,17 @@ public class NetworkTests {
                               0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,
                               0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,
                               0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1 });
-        X.print();
 
         // labels
         SimpleMatrix Y = new SimpleMatrix(1, 16, true,
                 new double[]{ 0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0 });
-        Y.print();
 
         train(network, X, Y);
     }
 
     @Test
-    // example problem from TDS article by Tobias Hill
-    // https://towardsdatascience.com/part-1-a-neural-network-from-scratch-foundation-e2d119df0f40
-    public void exampleFromTDS() {
-
+    //https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
+    public void exampleFromMattMazur() {
         Layer hidden = new Layer(2, new Sigmoid());
 
         Layer output = new Layer(2, new Sigmoid());
@@ -141,65 +130,64 @@ public class NetworkTests {
                 .build();
         network.initialize();
 
-        hidden.setWeight(0, 0, 0.3);
-        hidden.setWeight(0, 1, -0.4);
-        hidden.setBias(0, 0.25);
+        hidden.setWeight(0, 0, 0.15);
+        hidden.setWeight(0, 1, 0.20);
+        hidden.setBias(0, 0.35);
 
-        hidden.setWeight(1, 0, 0.2);
-        hidden.setWeight(1, 1, 0.6);
-        hidden.setBias(1, 0.45);
+        hidden.setWeight(1, 0, 0.25);
+        hidden.setWeight(1, 1, 0.30);
+        hidden.setBias(1, 0.35);
 
         output.initialize(2);
-        output.setWeight(0, 0, 0.7);
-        output.setWeight(0, 1, 0.5);
-        output.setBias(0, 0.15);
+        output.setWeight(0, 0, 0.4);
+        output.setWeight(0, 1, 0.45);
+        output.setBias(0, 0.60);
 
-        output.setWeight(1, 0, -0.3);
-        output.setWeight(1, 1, -0.1);
-        output.setBias(1, 0.35);
+        output.setWeight(1, 0, 0.5);
+        output.setWeight(1, 1, 0.55);
+        output.setBias(1, 0.60);
 
-        SimpleMatrix X = new SimpleMatrix(2, 1, true, new double[] {2, 3});
-        SimpleMatrix Y = new SimpleMatrix(2, 1, true, new double[] {1, 0.2});
+        SimpleMatrix X = new SimpleMatrix(2, 1, true, new double[] {0.05, 0.10});
+        SimpleMatrix Y = new SimpleMatrix(2, 1, true, new double[] {0.01, 0.99});
 
         SimpleMatrix P = network.predict(X);
-        assertDoubleEquals(0.712257432, P.get(0,0));
-        assertDoubleEquals(0.533097573, P.get(1, 0));
+
+        assertDoubleEquals(0.3775, hidden.getZ().get(0, 0));
+        assertDoubleEquals(new double[] { .593269992, .596884378}, hidden.getA().getDDRM().getData());
+
+        assertDoubleEquals(1.10590597, output.getZ().get(0, 0));
+        assertDoubleEquals(new double[]{ .75136507, .772928465 }, output.getA().getDDRM().getData());
+        assertDoubleEquals(new double[]{ .75136507, .772928465 }, P.getDDRM().getData());
 
         double cost = network.cost(P, Y);
-        System.out.println("cost: " + cost);
-        assertDoubleEquals(0.1937497789, cost);
+        assertDoubleEquals(0.2983711087600027, cost);
 
-        System.out.println("dZdW: " + output.getX().get(0,0)); // Oh1: 0.41338242108266987
-        System.out.println("Z: ");  // [ .90637319  .132584175 ]
-        output.getZ().print();
-        // In the TDS article, Toby shows 0.220793265 here.  It appears he is actually calculating g'(A), not g'(Z)
-        System.out.println("dAdZ: " + output.calculateZPrime()); // Z': 0.220793265
+        network.train(X, Y, 1, 1, 0.5, null, null);
 
-        // train
-        network.train(X, Y, 1, 1, 1.0, null, null);
+        assertDoubleEquals(new double[]{.149780716, .199561432, .249751144,  .299502287},
+                hidden.getWeights().getDDRM().getData());
+
+        assertDoubleEquals(new double[]{.35891648, .408666186, .51130127, .561370121},
+                output.getWeights().getDDRM().getData());
+
+        // the cost after updating weights does not match Matt's, but that's because he does not update the
+        // bias terms.  Comments confirm the correct value is 0.28047144679143016
         SimpleMatrix P2 = network.predict(X);
-        //P2.print();    // expect: y = [0.719269360605435 0.524309343003261]
-
-
         double cost2 = network.cost(P2, Y);
-        // expect: 0.1839862418540884.
-        //System.out.println("cost2: " + cost2);
+        assertDoubleEquals(0.28047144679143016, cost2);
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {
-        // initial cost
-        SimpleMatrix P1 = network.predict(X);
-        double cost = network.cost(P1, Y);
-        System.out.println("initial cost: " + cost);
 
         // train the network
-        network.train(X, Y, 100000, X.numCols(), 1.0, null, null);
+        network.train(X, Y, 100000, X.numCols(), 3.0, null, null);
 
-        // cost after training
-        SimpleMatrix P2 = network.predict(X);
-        P2.print();
-        cost = network.cost(P2, Y);
-        System.out.println("final cost: " + cost);
+        Y.print();
+
+        SimpleMatrix P = network.predict(X);
+        P.print();
+        double cost = network.cost(P, Y);
+        System.out.println("cost: " + cost);
     }
 
 }
