@@ -15,16 +15,15 @@ public class Layer {
     private final int numUnits;
     private final ActivationFunction activationFunction;
 
-    private SimpleMatrix w;  // weights vector, j x k where j = units this layer, k = prev. layer
+    private SimpleMatrix w;  // weights matrix, j x k where j = units this layer, k = prev. layer
     private SimpleMatrix b;  // bias column vector, j x 1
 
     // cached during forward pass
-    private SimpleMatrix X;  // input from previous layer
-    private SimpleMatrix Z;  // the linear computation portion of the output
-    private SimpleMatrix A;  // output of this layer -- g(Z)
+    private SimpleMatrix X;  // input from previous layer, n x m, where n = features and m = training examples
+    private SimpleMatrix Z;  // the linear computation portion of the output, j x m
+    private SimpleMatrix A;  // output of this layer -- g(Z), j x m
 
     // cached during backward pass
-    private SimpleMatrix dAdZ;
     private SimpleMatrix dCdZ;
     private SimpleMatrix dCdW;
     private SimpleMatrix dCdb;
@@ -53,17 +52,17 @@ public class Layer {
         }
     }
 
+    public SimpleMatrix getWeights() { return w; }
+
     public Double getWeight(int unit, int prevUnit) {
         return w.get(unit, prevUnit);
     }
 
-    public SimpleMatrix getWeights() { return w; }
-
-    public SimpleMatrix getBiases() { return b; }
-
     public void setWeight(int unit, int prevUnit, Double val) {
         w.set(unit, prevUnit, val);
     }
+
+    public SimpleMatrix getBiases() { return b; }
 
     public Double getBias(int unit) {
         return b.get(unit, 0);
@@ -79,24 +78,7 @@ public class Layer {
 
     public SimpleMatrix getA() { return A; }
 
-    public SimpleMatrix get_dAdZ() { return dAdZ; }
-
     public SimpleMatrix get_dCdZ() { return dCdZ; }
-
-    public SimpleMatrix get_dCdW() { return dCdW; }
-
-    public SimpleMatrix get_dCdb() { return dCdb; }
-
-    public SimpleMatrix calculateZPrime() {
-        SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
-        // unfortunately no broadcast operator
-        for (int r=0;r<Z_prime.numRows();r++) {
-            for (int c=0;c<Z_prime.numCols();c++) {
-                Z_prime.set(r, c, activationFunction.derivativeFunc(Z.get(r, c)));
-            }
-        }
-        return Z_prime;
-    }
 
     /**
      * Perform the forward computation step.  The output is the pair <Z, A>, where Z is the linear portion of the
@@ -129,33 +111,31 @@ public class Layer {
     }
 
     /**
-     * Calculate updated weights and biases.  Note this step does NOT update weights and biases.
+     * Calculate the gradient of the cost function w.r.t. the weights and biases
+     *
+     *  By the chain rule in calculus, dC/dW = dZ/dW * dA/dZ * dC/dA
+     *  dZ/dW: how much the input to this layer changes as the weights change
+     *  dA/dZ: how much the output of this layer changes as the input changes
+     *  dC/dA: how much the total cost changes as the output of this layer changes
+     *
+     * Similarly, dC/db = dZ/db * dA/dZ * dC/dA
+     * dz/db: This is just 1
      *
      * @param dCdA the derivative of the cost function with respect to the output (activation)
      *
-     * @return dCdW - the derivative of the cost function with respect to change in weights,
-     *         dCdB - the derivative of the cost function with respect to change in biases
+     * @return dCdW - the partial derivative of the cost function with respect to weights
+     *         dCdB - the partial derivative of the cost function with respect to biases
      */
-    public Pair<SimpleMatrix, SimpleMatrix> calculateUpdatedWeightsAndBiases(SimpleMatrix dCdA) {
+    public Pair<SimpleMatrix, SimpleMatrix> calculateGradients(SimpleMatrix dCdA) {
 
-        // we are given dC/dA (how much the cost changes with respect to the output)
-        // we need dZ/dW (how much input changes with respect to changes in weights), and
-        // we need dA/dZ (how much output changes with respect to input)
-        // From there, we can apply the chain rule to calculate:
-        // dC/dW = dZ/dW * dA/dZ * dC/dA
-
-        dAdZ = calculateZPrime();
-        dCdZ = dCdA.elementMult(dAdZ);
-
-        // the adjustment to the weights is proportional to how active the feature was
         int m = X.numCols();
+
+        // adjust the weights
+        SimpleMatrix dAdZ = calculateZPrime();
+        dCdZ = dCdA.elementMult(dAdZ);
         dCdW = dCdZ.mult(this.X.transpose()).divide(m);
 
-        // adjust the bias
-        // dC/db = dZ/db * dA/dZ * dC/dA
-        //       = dZ/db * dC/dZ
-        //       = 1 * dC/dZ
-        // dZ/db is just 1 since the change to the bias doesn't depend on the input
+        // adjust the biases
         dCdb = new SimpleMatrix(b.numRows(), 1);
         for (int r=0;r<b.numRows();r++) {
             double dbVal = 0.0;
@@ -171,14 +151,24 @@ public class Layer {
     /**
      * Update weights and biases
      *
-     * @param dW - deltas for weights
-     * @param db - deltas for biases
      * @param  learningRate - the learning rate
      */
-    public void updateWeightsAndBias(SimpleMatrix dW, SimpleMatrix db, double learningRate) {
+    public void updateWeightsAndBias(double learningRate) {
         // no multiply operator
         double reciprocalLearningRate = 1.0 / learningRate;
-        w = w.minus(dW.divide(reciprocalLearningRate));
-        b = b.minus(db.divide(reciprocalLearningRate));
+        w = w.minus(dCdW.divide(reciprocalLearningRate));
+        b = b.minus(dCdb.divide(reciprocalLearningRate));
     }
+
+    private SimpleMatrix calculateZPrime() {
+        SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
+        // unfortunately no broadcast operator
+        for (int r=0;r<Z_prime.numRows();r++) {
+            for (int c=0;c<Z_prime.numCols();c++) {
+                Z_prime.set(r, c, activationFunction.derivativeFunc(Z.get(r, c)));
+            }
+        }
+        return Z_prime;
+    }
+
 }
