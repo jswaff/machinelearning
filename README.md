@@ -29,7 +29,7 @@ Build a neural network using the builder interface:
 
 ```
 
-In this example, we have a four layer network - 1 input layer, 2 hidden layers, and the output layer.  Note the input layer is implicit, and not included in the list of layers.  This network has 120 inputs and uses the "Mean Squared Error" cost function.  The first hidden layer has 20 outputs and uses the Rectified Linear Unit activation function.
+In this example, we have a four layer network - 1 input layer, 2 hidden layers, and the output layer.  Note the input layer is implicit, and not included in the list of layers.  This network has 120 inputs and uses the "Mean Squared Error" cost function.  The first hidden layer has 20 neurons and uses the Rectified Linear Unit activation function.
 
 Once the network is built, you need to initialize it:
 
