@@ -36,7 +36,7 @@ Once the network is built, you need to initialize it:
         network.initialize();
 ```
 
-This will initialize the weights to a small random value in the interval [-0.5, 0.5], and biases to 0.
+This will initialize the weights to a small random value in the interval [-0.5, 0.5), and biases to 0.
 
 ### Training the network
 
