@@ -2,6 +2,9 @@ package com.jamesswafford.ml.nn.activation;
 
 import org.ejml.simple.SimpleMatrix;
 
+// this class is a work in progress.  the derivative function needs to be vectorized and tested, then
+// fit into the Activation interface somehow.  Perhaps changing the interface to use SimpleMatrix as input
+// and output rather than a single element
 public class Softmax {
 
     public SimpleMatrix fn(SimpleMatrix Z) {
