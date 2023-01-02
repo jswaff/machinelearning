@@ -69,7 +69,7 @@ execution complete.  bye.
 
 ### To Do
 
-* additional activation functions, i.e. tanh, softmax
+* softmax activation function
 * abstract away the EJML (linear algebra library) stuff from the interface
 * early stopping criteria
 * store and load network configuration
