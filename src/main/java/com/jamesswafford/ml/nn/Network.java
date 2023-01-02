@@ -1,6 +1,7 @@
 package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.cost.CostFunction;
+import com.jamesswafford.ml.nn.util.StopEvaluator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,8 @@ public class Network {
             numMiniBatches++;
         }
 
+        StopEvaluator stopEvaluator = new StopEvaluator(10, null);
+
         for (int i=0;i<numEpochs;i++) {
 
             for (int j=0;j<numMiniBatches;j++) {
@@ -99,7 +102,12 @@ public class Network {
             }
 
             if (X_test != null && Y_test != null && (i % 10) == 0) {
-                System.out.println("\tcost(" + i + "): " + cost(predict(X_test), Y_test));
+                double cost = cost(predict(X_test), Y_test);
+                System.out.println("\tcost(" + i + "): " + cost);
+                if (stopEvaluator.stop(cost)) {
+                    System.out.println("\tearly stop triggered");
+                    break;
+                }
             }
         }
     }
