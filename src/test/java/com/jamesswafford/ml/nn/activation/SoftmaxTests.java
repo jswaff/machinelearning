@@ -17,6 +17,20 @@ public class SoftmaxTests {
         SimpleMatrix A = softmax.fn(Z);
 
         assertDoubleEquals(new double[] { .659001139, .242432971, .09856589 }, A.getDDRM().getData());
+
+        // test vectorization
+        Z = new SimpleMatrix(3, 3, true,
+                new double[] { 2.0, 0.1, 1.0,
+                               1.0, 1.0, 1.0,
+                               0.1, 2.0, 0.0 });
+        A = softmax.fn(Z);
+        A.print();
+
+        assertDoubleEquals(
+                new double[] { .659001139, .09856589, 0.422318798,
+                               .242432971, .242432971, 0.422318798,
+                               .09856589,  .659001139, 0.155362403 }, A.getDDRM().getData());
+
     }
 
     @Test

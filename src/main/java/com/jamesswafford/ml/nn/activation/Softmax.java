@@ -5,33 +5,45 @@ import org.ejml.simple.SimpleMatrix;
 public class Softmax {
 
     public SimpleMatrix fn(SimpleMatrix Z) {
-        assert(Z.numCols()==1);
-        SimpleMatrix A = new SimpleMatrix(Z.numRows(), 1);
 
-        double sum = 0;
+        SimpleMatrix A = new SimpleMatrix(Z.numRows(), Z.numCols());
+
+        double[] sum = new double[Z.numCols()];
         for (int r=0;r<Z.numRows();r++) {
-            double v = Math.exp(Z.get(r, 0));
-            A.set(r, 0, v);
-            sum += v;
+            for (int c=0;c<Z.numCols();c++) {
+                double v = Math.exp(Z.get(r, c));
+                A.set(r, c, v);
+                sum[c] += v;
+            }
         }
 
-        return A.divide(sum);
+        // normalize
+        for (int r=0;r<Z.numRows();r++) {
+            for (int c=0;c<Z.numCols();c++) {
+                A.set(r, c, A.get(r, c) / sum[c]);
+            }
+        }
+
+        return A;
     }
 
     // reference: https://stats.stackexchange.com/questions/453539/softmax-derivative-implementation
-    public SimpleMatrix dFn(SimpleMatrix X) {
-        assert(X.numCols()==1);
-        int n = X.numRows();
+    // TODO: vectorize
+    // A has one row per output neuron and one column per sample
+    // each column should produce a mxm matrix
+    public SimpleMatrix dFn(SimpleMatrix A) {
+        assert(A.numCols()==1);
+        int n = A.numRows();
 
-        SimpleMatrix P = fn(X);
+        SimpleMatrix P = fn(A);
 
         SimpleMatrix out = new SimpleMatrix(n, n);
-        for (int i=0;i<n;i++) {
-            for (int j=0;j<n;j++) {
-                double d = i==j ? 1.0 : 0.0;
-                double p_i = P.get(i, 0);
-                double p_j = P.get(j, 0);
-                out.set(i, j, p_i * (d - p_j));
+        for (int r=0;r<n;r++) {
+            for (int c=0;c<n;c++) {
+                double d = r==c ? 1.0 : 0.0;
+                double p_r = P.get(r, 0);
+                double p_c = P.get(c, 0);
+                out.set(r, c, p_r * (d - p_c));
             }
         }
 
