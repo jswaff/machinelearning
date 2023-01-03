@@ -2,6 +2,11 @@ package com.jamesswafford.ml.nn.activation;
 
 public class Sigmoid implements ActivationFunction {
 
+    public static Sigmoid INSTANCE = new Sigmoid();
+
+    private Sigmoid() {
+    }
+
     @Override
     public String getName() {
         return "sigmoid";

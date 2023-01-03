@@ -6,7 +6,7 @@ import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
 
 public class SigmoidTests {
 
-    private final Sigmoid sigmoid = new Sigmoid();
+    private final Sigmoid sigmoid = Sigmoid.INSTANCE;
 
     @Test
     void activation() {

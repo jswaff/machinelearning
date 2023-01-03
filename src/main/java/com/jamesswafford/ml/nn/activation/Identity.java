@@ -2,6 +2,11 @@ package com.jamesswafford.ml.nn.activation;
 
 public class Identity implements ActivationFunction {
 
+    public static Identity INSTANCE = new Identity();
+
+    private Identity() {
+    }
+
     @Override
     public String getName() {
         return "identity";

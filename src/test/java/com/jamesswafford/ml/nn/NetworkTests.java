@@ -17,7 +17,7 @@ public class NetworkTests {
     public void andGate() {
         Network network = Network.builder()
                 .numInputUnits(2)
-                .layers(List.of(new Layer(1, new Sigmoid())))
+                .layers(List.of(new Layer(1, Sigmoid.INSTANCE)))
                 .costFunction(new MSE())
                 .build();
 
@@ -38,8 +38,8 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(2)
                 .layers(List.of(
-                        new Layer(2, new Sigmoid()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(2, Sigmoid.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
                 .costFunction(new MSE())
                 .build();
@@ -67,8 +67,8 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(3)
                 .layers(List.of(
-                        new Layer(2, new Sigmoid()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(2, Sigmoid.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
                 .costFunction(new MSE())
                 .build();
@@ -93,9 +93,9 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(4)
                 .layers(List.of(
-                        new Layer(3, new Sigmoid()),
-                        new Layer(3, new Sigmoid()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(3, Sigmoid.INSTANCE),
+                        new Layer(3, Sigmoid.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
                 .costFunction(new MSE())
                 .build();
@@ -161,11 +161,22 @@ public class NetworkTests {
     }
 
     @Test
-    public void state() {
+    public void toAndFromState() {
+        Network network = buildExampleNetworkFromMM();
+        Network.NetworkState state = network.getState();
+        assertEquals(2, state.getNumInputUnits());
+        assertEquals(2, state.getLayers().length); // layers tested in LayerTests
+        assertEquals("mse", state.getCostFunction());
+        // TODO: fromState
+    }
+
+    @Test
+    public void toAndFromJson() {
         Network network = buildExampleNetworkFromMM();
         String json = network.toJson();
         Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
         assertEquals(network.getState(), state);
+        // TODO: fromJson
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {
@@ -182,9 +193,9 @@ public class NetworkTests {
     }
 
     private Network buildExampleNetworkFromMM() {
-        Layer hidden = new Layer(2, new Sigmoid());
+        Layer hidden = new Layer(2, Sigmoid.INSTANCE);
 
-        Layer output = new Layer(2, new Sigmoid());
+        Layer output = new Layer(2, Sigmoid.INSTANCE);
 
         Network network = Network.builder()
                 .numInputUnits(2)

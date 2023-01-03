@@ -3,10 +3,7 @@ package com.jamesswafford.ml.nn;
 import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
 import com.jamesswafford.ml.nn.util.StopEvaluator;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 
@@ -157,7 +154,7 @@ public class Network {
     }
 
     @Data
-    public class NetworkState {
+    public static class NetworkState {
         private int numInputUnits;
         private String costFunction;
         private Layer.LayerState[] layers;

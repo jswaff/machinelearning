@@ -2,6 +2,7 @@ package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
+import com.jamesswafford.ml.nn.activation.Tanh;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ public class LayerTests {
 
     @Test
     public void initialize() {
-        Layer layer = new Layer(10, new Identity());
+        Layer layer = new Layer(10, Identity.INSTANCE);
         layer.initialize(3);
 
         // biases are initialized to 0
@@ -231,6 +232,27 @@ public class LayerTests {
                 .05-1*.1,
                 .05+1*.1,
                 .05-.5*.1}, layer.getBiases().getDDRM().getData());
+    }
+
+    @Test
+    public void toAndFromState() {
+        Layer layer = build3x4Layer(Tanh.INSTANCE);
+        Layer.LayerState state = layer.getState();
+        assertEquals(4, state.getNumUnits());
+        assertEquals(3, state.getPrevUnits());
+        assertEquals("tanh", state.getActivationFunction());
+        assertEquals(12, state.getWeights().length);
+        assertDoubleEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4}, state.getWeights());
+        assertEquals(4, state.getBiases().length);
+        assertDoubleEquals(new double[] {.05,.05,.05,.05}, state.getBiases());
+
+        Layer layer2 = Layer.fromState(state);
+        assertEquals(4, layer2.getNumUnits());
+        assertEquals(layer.getActivationFunction(), Tanh.INSTANCE);
+        assertEquals(12, layer2.getWeights().getNumElements());
+        assertDoubleEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4}, layer2.getWeights().getDDRM().getData());
+        assertEquals(4, layer2.getBiases().getNumElements());
+        assertDoubleEquals(new double[] {.05,.05,.05,.05}, layer2.getBiases().getDDRM().getData());
     }
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {

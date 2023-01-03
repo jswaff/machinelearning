@@ -1,6 +1,7 @@
 package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
+import com.jamesswafford.ml.nn.activation.ActivationFunctionFactory;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ public class Layer {
 
     @Getter
     private final int numUnits;
+
+    @Getter
     private final ActivationFunction activationFunction;
 
     private SimpleMatrix w;  // weights matrix, j x k where j = units this layer, k = prev. layer
@@ -176,9 +179,15 @@ public class Layer {
         return new LayerState(this);
     }
 
+    public static Layer fromState(LayerState state) {
+        Layer layer = new Layer(state.numUnits, ActivationFunctionFactory.create(state.activationFunction));
+        layer.w = new SimpleMatrix(state.numUnits, state.prevUnits, true, state.weights);
+        layer.b = new SimpleMatrix(state.numUnits, 1, true, state.biases);
+        return layer;
+    }
+
     @Data
     public static class LayerState {
-
         private int numUnits;
         private int prevUnits;
         private String activationFunction;
