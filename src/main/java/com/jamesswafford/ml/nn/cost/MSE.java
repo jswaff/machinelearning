@@ -4,6 +4,11 @@ import org.ejml.simple.SimpleMatrix;
 
 public class MSE implements CostFunction {
 
+    @Override
+    public String getName() {
+        return "mse";
+    }
+
     /**
      * Calculate the cost (error)
      *

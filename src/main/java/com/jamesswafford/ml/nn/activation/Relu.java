@@ -3,6 +3,11 @@ package com.jamesswafford.ml.nn.activation;
 public class Relu implements ActivationFunction {
 
     @Override
+    public String getName() {
+        return "relu";
+    }
+
+    @Override
     public Double func(Double z) {
         return Math.max(z, 0.0);
     }

@@ -15,6 +15,11 @@ public class LayerTests {
 
     ActivationFunction aFunc = new ActivationFunction() {
         @Override
+        public String getName() {
+            return "double";
+        }
+
+        @Override
         public Double func(Double z) {
             return z * 2;
         }

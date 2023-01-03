@@ -3,6 +3,11 @@ package com.jamesswafford.ml.nn.activation;
 public class Identity implements ActivationFunction {
 
     @Override
+    public String getName() {
+        return "identity";
+    }
+
+    @Override
     public Double func(Double z) {
         return z;
     }

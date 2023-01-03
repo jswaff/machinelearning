@@ -3,6 +3,11 @@ package com.jamesswafford.ml.nn.activation;
 public class Sigmoid implements ActivationFunction {
 
     @Override
+    public String getName() {
+        return "sigmoid";
+    }
+
+    @Override
     public Double func(Double z) {
         return 1.0 / (1 + Math.exp(-z));
     }

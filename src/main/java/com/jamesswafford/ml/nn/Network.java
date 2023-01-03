@@ -1,8 +1,10 @@
 package com.jamesswafford.ml.nn;
 
+import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
 import com.jamesswafford.ml.nn.util.StopEvaluator;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
@@ -142,5 +144,31 @@ public class Network {
 
     public List<Layer> getLayers() {
         return layers;
+    }
+
+    public NetworkState getState() {
+        return new NetworkState(this);
+    }
+
+    public String toJson() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        return gsonBuilder.create().toJson(getState());
+    }
+
+    @Data
+    public class NetworkState {
+        private int numInputUnits;
+        private String costFunction;
+        private Layer.LayerState[] layers;
+
+        public NetworkState(Network network) {
+            this.numInputUnits = network.numInputUnits;
+            this.costFunction = network.costFunction.getName();
+            this.layers = new Layer.LayerState[network.layers.size()];
+            for (int i=0;i<network.layers.size();i++) {
+                this.layers[i] = network.layers.get(i).getState();
+            }
+        }
     }
 }

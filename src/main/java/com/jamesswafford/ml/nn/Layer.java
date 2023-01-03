@@ -1,6 +1,7 @@
 package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
@@ -171,4 +172,25 @@ public class Layer {
         return Z_prime;
     }
 
+    public LayerState getState() {
+        return new LayerState(this);
+    }
+
+    @Data
+    public static class LayerState {
+
+        private int numUnits;
+        private int prevUnits;
+        private String activationFunction;
+        private double[] weights;
+        private double[] biases;
+
+        public LayerState(Layer layer) {
+            this.numUnits = layer.numUnits;
+            this.prevUnits = layer.w.numCols();
+            this.activationFunction = layer.activationFunction.getName();
+            this.weights = layer.w.getDDRM().getData();
+            this.biases = layer.b.getDDRM().getData();
+        }
+    }
 }

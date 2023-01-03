@@ -1,6 +1,12 @@
 package com.jamesswafford.ml.nn.activation;
 
 public class Tanh implements ActivationFunction {
+
+    @Override
+    public String getName() {
+        return "tanh";
+    }
+
     @Override
     public Double func(Double z) {
         return Math.tanh(z);
