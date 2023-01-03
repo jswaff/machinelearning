@@ -1,5 +1,6 @@
 package com.jamesswafford.ml.nn;
 
+import com.google.gson.Gson;
 import com.jamesswafford.ml.nn.activation.Sigmoid;
 import com.jamesswafford.ml.nn.cost.MSE;
 import org.ejml.simple.SimpleMatrix;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NetworkTests {
 
@@ -156,6 +158,14 @@ public class NetworkTests {
         Network network2 = buildExampleNetworkFromMM();
         network2.train(X, Y, 10000, 1, 0.5, null, null);
         assertDoubleEquals(2.4475622359322466E-6, network2.cost(network2.predict(X), Y));
+    }
+
+    @Test
+    public void state() {
+        Network network = buildExampleNetworkFromMM();
+        String json = network.toJson();
+        Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
+        assertEquals(network.getState(), state);
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {
