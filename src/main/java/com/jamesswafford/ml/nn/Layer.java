@@ -24,10 +24,13 @@ public class Layer {
 
     // cached during forward pass
     private SimpleMatrix X;  // input from previous layer, n x m, where n = features and m = training examples
+    @Getter
     private SimpleMatrix Z;  // the linear computation portion of the output, j x m
+    @Getter
     private SimpleMatrix A;  // output of this layer -- g(Z), j x m
 
     // cached during backward pass
+    @Getter
     private SimpleMatrix dCdZ;
     private SimpleMatrix dCdW;
     private SimpleMatrix dCdb;
@@ -75,14 +78,6 @@ public class Layer {
     public void setBias(int unit, Double val) {
         b.set(unit, 0, val);
     }
-
-    public SimpleMatrix getX() { return X; }
-
-    public SimpleMatrix getZ() { return Z; }
-
-    public SimpleMatrix getA() { return A; }
-
-    public SimpleMatrix get_dCdZ() { return dCdZ; }
 
     /**
      * Perform the forward computation step.  The output is the pair <Z, A>, where Z is the linear portion of the

@@ -96,7 +96,7 @@ public class Network {
 
                     // set dC/dA for the previous layer (l-1)
                     if (L < reverseLayers.size() - 1) {
-                        SimpleMatrix dCdZ = layer.get_dCdZ();
+                        SimpleMatrix dCdZ = layer.getDCdZ();
                         dCdA = layer.getWeights().transpose().mult(dCdZ);
                     }
                 }
