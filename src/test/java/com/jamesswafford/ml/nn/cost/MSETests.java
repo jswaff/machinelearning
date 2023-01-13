@@ -8,7 +8,7 @@ import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
 
 public class MSETests {
 
-    private final MSE mse = new MSE();
+    private final MSE mse = MSE.INSTANCE;
 
     @Test
     public void cost() {

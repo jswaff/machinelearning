@@ -248,7 +248,7 @@ public class LayerTests {
 
         Layer layer2 = Layer.fromState(state);
         assertEquals(4, layer2.getNumUnits());
-        assertEquals(layer.getActivationFunction(), Tanh.INSTANCE);
+        assertEquals(Tanh.INSTANCE, layer.getActivationFunction());
         assertEquals(12, layer2.getWeights().getNumElements());
         assertDoubleEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4}, layer2.getWeights().getDDRM().getData());
         assertEquals(4, layer2.getBiases().getNumElements());

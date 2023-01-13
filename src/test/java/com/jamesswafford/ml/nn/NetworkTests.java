@@ -18,7 +18,7 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(2)
                 .layers(List.of(new Layer(1, Sigmoid.INSTANCE)))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -41,7 +41,7 @@ public class NetworkTests {
                         new Layer(2, Sigmoid.INSTANCE),
                         new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -70,7 +70,7 @@ public class NetworkTests {
                         new Layer(2, Sigmoid.INSTANCE),
                         new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -97,7 +97,7 @@ public class NetworkTests {
                         new Layer(3, Sigmoid.INSTANCE),
                         new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -165,9 +165,13 @@ public class NetworkTests {
         Network network = buildExampleNetworkFromMM();
         Network.NetworkState state = network.getState();
         assertEquals(2, state.getNumInputUnits());
-        assertEquals(2, state.getLayers().length); // layers tested in LayerTests
+        assertEquals(2, state.getLayers().length); // layers "toState" tested in LayerTests
         assertEquals("mse", state.getCostFunction());
-        // TODO: fromState
+
+        Network network2 = Network.fromState(state);
+        assertEquals(2, network2.getNumInputUnits());
+        assertEquals(MSE.INSTANCE, network2.getCostFunction());
+        assertEquals(2, network2.getLayers().size()); // layers "fromState" tested in LayerTests
     }
 
     @Test
@@ -203,7 +207,7 @@ public class NetworkTests {
                         hidden,
                         output
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
         network.initialize();
 

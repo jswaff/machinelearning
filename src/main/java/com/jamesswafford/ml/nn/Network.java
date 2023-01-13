@@ -2,12 +2,14 @@ package com.jamesswafford.ml.nn;
 
 import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
+import com.jamesswafford.ml.nn.cost.CostFunctionFactory;
 import com.jamesswafford.ml.nn.util.StopEvaluator;
 import lombok.*;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 
@@ -15,12 +17,15 @@ import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 @Builder
 public class Network {
 
+    @Getter
     @NonNull
     private final int numInputUnits;
 
+    @Getter
     @NonNull
     private final List<Layer> layers;
 
+    @Getter
     @NonNull
     private final CostFunction costFunction;
 
@@ -139,12 +144,16 @@ public class Network {
         return costFunction.cost(predictions, labels);
     }
 
-    public List<Layer> getLayers() {
-        return layers;
-    }
-
     public NetworkState getState() {
         return new NetworkState(this);
+    }
+
+    public static Network fromState(NetworkState state) {
+        return Network.builder()
+                .numInputUnits(state.numInputUnits)
+                .costFunction(CostFunctionFactory.create(state.costFunction))
+                .layers(Arrays.stream(state.layers).map(Layer::fromState).collect(Collectors.toList()))
+                .build();
     }
 
     public String toJson() {
