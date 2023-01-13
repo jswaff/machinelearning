@@ -180,7 +180,19 @@ public class NetworkTests {
         String json = network.toJson();
         Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
         assertEquals(network.getState(), state);
-        // TODO: fromJson
+
+        Network network2 = Network.fromJson(json);
+        assertEquals(network.getNumInputUnits(), network2.getNumInputUnits());
+        assertEquals(network.getCostFunction(), network2.getCostFunction());
+        assertEquals(network.getLayers().size(), network2.getLayers().size());
+        for (int i=0;i<network.getLayers().size();i++) {
+            Layer layer1 = network.getLayers().get(i);
+            Layer layer2 = network2.getLayers().get(i);
+            assertEquals(layer1.getNumUnits(), layer2.getNumUnits());
+            assertEquals(layer1.getActivationFunction(), layer2.getActivationFunction());
+            assertDoubleEquals(layer1.getWeights().getDDRM().getData(), layer2.getWeights().getDDRM().getData());
+            assertDoubleEquals(layer1.getBiases().getDDRM().getData(), layer2.getBiases().getDDRM().getData());
+        }
     }
 
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {

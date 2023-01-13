@@ -1,5 +1,6 @@
 package com.jamesswafford.ml.nn;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
 import com.jamesswafford.ml.nn.cost.CostFunctionFactory;
@@ -160,6 +161,11 @@ public class Network {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setPrettyPrinting();
         return gsonBuilder.create().toJson(getState());
+    }
+
+    public static Network fromJson(String json) {
+        Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
+        return fromState(state);
     }
 
     @Data
