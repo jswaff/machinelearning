@@ -69,11 +69,10 @@ execution complete.  bye.
 
 ### To Do
 
-* softmax activation function
-* abstract away the EJML (linear algebra library) stuff from the interface
 * early stopping criteria
-* store and load network configuration
+* abstract away the EJML (linear algebra library) stuff from the interface
 * regularization - L2, possibly drop out
+* softmax activation function
 * support for other cost functions, i.e. cross-entropy
 * support for other initializers, i.e. Xavier
 * support for other optimizers, i.e. Adam
