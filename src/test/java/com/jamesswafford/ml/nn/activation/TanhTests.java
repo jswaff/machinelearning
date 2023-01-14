@@ -7,7 +7,7 @@ import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
 
 public class TanhTests {
 
-    private final Tanh tanh = new Tanh();
+    private final Tanh tanh = Tanh.INSTANCE;
 
     @Test
     void activation() {

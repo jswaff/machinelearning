@@ -1,6 +1,8 @@
 package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
+import com.jamesswafford.ml.nn.activation.ActivationFunctionFactory;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
@@ -13,6 +15,8 @@ public class Layer {
 
     @Getter
     private final int numUnits;
+
+    @Getter
     private final ActivationFunction activationFunction;
 
     private SimpleMatrix w;  // weights matrix, j x k where j = units this layer, k = prev. layer
@@ -20,10 +24,13 @@ public class Layer {
 
     // cached during forward pass
     private SimpleMatrix X;  // input from previous layer, n x m, where n = features and m = training examples
+    @Getter
     private SimpleMatrix Z;  // the linear computation portion of the output, j x m
+    @Getter
     private SimpleMatrix A;  // output of this layer -- g(Z), j x m
 
     // cached during backward pass
+    @Getter
     private SimpleMatrix dCdZ;
     private SimpleMatrix dCdW;
     private SimpleMatrix dCdb;
@@ -71,14 +78,6 @@ public class Layer {
     public void setBias(int unit, Double val) {
         b.set(unit, 0, val);
     }
-
-    public SimpleMatrix getX() { return X; }
-
-    public SimpleMatrix getZ() { return Z; }
-
-    public SimpleMatrix getA() { return A; }
-
-    public SimpleMatrix get_dCdZ() { return dCdZ; }
 
     /**
      * Perform the forward computation step.  The output is the pair <Z, A>, where Z is the linear portion of the
@@ -171,4 +170,31 @@ public class Layer {
         return Z_prime;
     }
 
+    public LayerState getState() {
+        return new LayerState(this);
+    }
+
+    public static Layer fromState(LayerState state) {
+        Layer layer = new Layer(state.numUnits, ActivationFunctionFactory.create(state.activationFunction));
+        layer.w = new SimpleMatrix(state.numUnits, state.prevUnits, true, state.weights);
+        layer.b = new SimpleMatrix(state.numUnits, 1, true, state.biases);
+        return layer;
+    }
+
+    @Data
+    public static class LayerState {
+        private int numUnits;
+        private int prevUnits;
+        private String activationFunction;
+        private double[] weights;
+        private double[] biases;
+
+        public LayerState(Layer layer) {
+            this.numUnits = layer.numUnits;
+            this.prevUnits = layer.w.numCols();
+            this.activationFunction = layer.activationFunction.getName();
+            this.weights = layer.w.getDDRM().getData();
+            this.biases = layer.b.getDDRM().getData();
+        }
+    }
 }

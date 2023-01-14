@@ -19,11 +19,11 @@ Build a neural network using the builder interface:
         Network network = Network.builder()
                 .numInputUnits(120)
                 .layers(List.of(
-                        new Layer(20, new Relu()),
-                        new Layer(10, new Relu()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(20, Relu.INSTANCE),
+                        new Layer(10, Relu.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
 ```

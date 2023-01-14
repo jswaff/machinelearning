@@ -1,14 +1,16 @@
 package com.jamesswafford.ml.nn;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
+import com.jamesswafford.ml.nn.cost.CostFunctionFactory;
 import com.jamesswafford.ml.nn.util.StopEvaluator;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 
@@ -16,12 +18,15 @@ import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 @Builder
 public class Network {
 
+    @Getter
     @NonNull
     private final int numInputUnits;
 
+    @Getter
     @NonNull
     private final List<Layer> layers;
 
+    @Getter
     @NonNull
     private final CostFunction costFunction;
 
@@ -92,7 +97,7 @@ public class Network {
 
                     // set dC/dA for the previous layer (l-1)
                     if (L < reverseLayers.size() - 1) {
-                        SimpleMatrix dCdZ = layer.get_dCdZ();
+                        SimpleMatrix dCdZ = layer.getDCdZ();
                         dCdA = layer.getWeights().transpose().mult(dCdZ);
                     }
                 }
@@ -140,7 +145,42 @@ public class Network {
         return costFunction.cost(predictions, labels);
     }
 
-    public List<Layer> getLayers() {
-        return layers;
+    public NetworkState getState() {
+        return new NetworkState(this);
+    }
+
+    public static Network fromState(NetworkState state) {
+        return Network.builder()
+                .numInputUnits(state.numInputUnits)
+                .costFunction(CostFunctionFactory.create(state.costFunction))
+                .layers(Arrays.stream(state.layers).map(Layer::fromState).collect(Collectors.toList()))
+                .build();
+    }
+
+    public String toJson() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        return gsonBuilder.create().toJson(getState());
+    }
+
+    public static Network fromJson(String json) {
+        Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
+        return fromState(state);
+    }
+
+    @Data
+    public static class NetworkState {
+        private int numInputUnits;
+        private String costFunction;
+        private Layer.LayerState[] layers;
+
+        public NetworkState(Network network) {
+            this.numInputUnits = network.numInputUnits;
+            this.costFunction = network.costFunction.getName();
+            this.layers = new Layer.LayerState[network.layers.size()];
+            for (int i=0;i<network.layers.size();i++) {
+                this.layers[i] = network.layers.get(i).getState();
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.jamesswafford.ml.nn;
 
+import com.google.gson.Gson;
 import com.jamesswafford.ml.nn.activation.Sigmoid;
 import com.jamesswafford.ml.nn.cost.MSE;
 import org.ejml.simple.SimpleMatrix;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NetworkTests {
 
@@ -15,8 +17,8 @@ public class NetworkTests {
     public void andGate() {
         Network network = Network.builder()
                 .numInputUnits(2)
-                .layers(List.of(new Layer(1, new Sigmoid())))
-                .costFunction(new MSE())
+                .layers(List.of(new Layer(1, Sigmoid.INSTANCE)))
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -36,10 +38,10 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(2)
                 .layers(List.of(
-                        new Layer(2, new Sigmoid()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(2, Sigmoid.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -65,10 +67,10 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(3)
                 .layers(List.of(
-                        new Layer(2, new Sigmoid()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(2, Sigmoid.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -91,11 +93,11 @@ public class NetworkTests {
         Network network = Network.builder()
                 .numInputUnits(4)
                 .layers(List.of(
-                        new Layer(3, new Sigmoid()),
-                        new Layer(3, new Sigmoid()),
-                        new Layer(1, new Sigmoid())
+                        new Layer(3, Sigmoid.INSTANCE),
+                        new Layer(3, Sigmoid.INSTANCE),
+                        new Layer(1, Sigmoid.INSTANCE)
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
 
         network.initialize();
@@ -158,6 +160,41 @@ public class NetworkTests {
         assertDoubleEquals(2.4475622359322466E-6, network2.cost(network2.predict(X), Y));
     }
 
+    @Test
+    public void toAndFromState() {
+        Network network = buildExampleNetworkFromMM();
+        Network.NetworkState state = network.getState();
+        assertEquals(2, state.getNumInputUnits());
+        assertEquals(2, state.getLayers().length); // layers "toState" tested in LayerTests
+        assertEquals("mse", state.getCostFunction());
+
+        Network network2 = Network.fromState(state);
+        assertEquals(2, network2.getNumInputUnits());
+        assertEquals(MSE.INSTANCE, network2.getCostFunction());
+        assertEquals(2, network2.getLayers().size()); // layers "fromState" tested in LayerTests
+    }
+
+    @Test
+    public void toAndFromJson() {
+        Network network = buildExampleNetworkFromMM();
+        String json = network.toJson();
+        Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
+        assertEquals(network.getState(), state);
+
+        Network network2 = Network.fromJson(json);
+        assertEquals(network.getNumInputUnits(), network2.getNumInputUnits());
+        assertEquals(network.getCostFunction(), network2.getCostFunction());
+        assertEquals(network.getLayers().size(), network2.getLayers().size());
+        for (int i=0;i<network.getLayers().size();i++) {
+            Layer layer1 = network.getLayers().get(i);
+            Layer layer2 = network2.getLayers().get(i);
+            assertEquals(layer1.getNumUnits(), layer2.getNumUnits());
+            assertEquals(layer1.getActivationFunction(), layer2.getActivationFunction());
+            assertDoubleEquals(layer1.getWeights().getDDRM().getData(), layer2.getWeights().getDDRM().getData());
+            assertDoubleEquals(layer1.getBiases().getDDRM().getData(), layer2.getBiases().getDDRM().getData());
+        }
+    }
+
     private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {
 
         // train the network
@@ -172,9 +209,9 @@ public class NetworkTests {
     }
 
     private Network buildExampleNetworkFromMM() {
-        Layer hidden = new Layer(2, new Sigmoid());
+        Layer hidden = new Layer(2, Sigmoid.INSTANCE);
 
-        Layer output = new Layer(2, new Sigmoid());
+        Layer output = new Layer(2, Sigmoid.INSTANCE);
 
         Network network = Network.builder()
                 .numInputUnits(2)
@@ -182,7 +219,7 @@ public class NetworkTests {
                         hidden,
                         output
                 ))
-                .costFunction(new MSE())
+                .costFunction(MSE.INSTANCE)
                 .build();
         network.initialize();
 

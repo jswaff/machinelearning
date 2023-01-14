@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ReluTests {
 
-    private final Relu relu = new Relu();
+    private final Relu relu = Relu.INSTANCE;
 
     @Test
     void activation() {
