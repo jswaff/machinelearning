@@ -61,7 +61,7 @@ public class Network {
 
         // split the data up into mini-batches
         int numMiniBatches = m / miniBatchSize;
-        if ((X_train.numCols() % m) != 0) {
+        if ((X_train.numCols() % numMiniBatches) != 0) {
             numMiniBatches++;
         }
 
