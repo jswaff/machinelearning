@@ -10,6 +10,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
@@ -58,52 +59,29 @@ public class Network {
     {
         int m = X_train.numCols(); // number of training samples
 
-        List<Layer> reverseLayers = new ArrayList<>(layers);
-        Collections.reverse(reverseLayers);
-
         // split the data up into mini-batches
         int numMiniBatches = m / miniBatchSize;
         if ((X_train.numCols() % m) != 0) {
             numMiniBatches++;
         }
 
+        train(numMiniBatches, batchNum -> getMiniBatch(X_train, Y_train, batchNum, miniBatchSize),
+                numEpochs, learningRate, X_test, Y_test);
+    }
+
+    public void train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
+                      int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
+    {
         StopEvaluator stopEvaluator = new StopEvaluator(10, null);
 
         for (int i=0;i<numEpochs;i++) {
 
             for (int j=0;j<numMiniBatches;j++) {
-
-                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = getMiniBatch(X_train, Y_train, j, miniBatchSize);
+                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = miniBatchFunc.apply(j);
                 SimpleMatrix X_batch = X_Y_batch.getValue0();
                 SimpleMatrix Y_batch = X_Y_batch.getValue1();
 
-                // feed forward
-                SimpleMatrix A = X_batch;
-                for (Layer layer : layers) {
-                    Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
-                    A = Z_A.getValue1();
-                }
-
-                // backwards propagation
-                // we update dC/dA as we go.  For the last layer, this is simply the derivative of the cost
-                // function.  It's more complex for hidden layers, as changes to the activation function will
-                // impact the output of each neuron in the next layer.
-                double normalizedLearningRate = learningRate / X_batch.numCols();
-                SimpleMatrix dCdA = A.minus(Y_batch);
-
-                for (int L = 0; L < reverseLayers.size(); L++) {
-                    Layer layer = reverseLayers.get(L);
-                    layer.calculateGradients(dCdA);
-
-                    // set dC/dA for the previous layer (l-1)
-                    if (L < reverseLayers.size() - 1) {
-                        SimpleMatrix dCdZ = layer.getDCdZ();
-                        dCdA = layer.getWeights().transpose().mult(dCdZ);
-                    }
-                }
-
-                // update the weights and biases
-                layers.forEach(layer -> layer.updateWeightsAndBias(normalizedLearningRate));
+                processMinibatch(X_batch, Y_batch, learningRate);
             }
 
             if (X_test != null && Y_test != null && (i % 10) == 0) {
@@ -115,6 +93,37 @@ public class Network {
                 }
             }
         }
+    }
+
+    private void processMinibatch(SimpleMatrix X_batch, SimpleMatrix Y_batch, double learningRate) {
+
+        // feed forward
+        SimpleMatrix A = X_batch;
+        for (Layer layer : layers) {
+            Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
+            A = Z_A.getValue1();
+        }
+
+        // backwards propagation
+        // we update dC/dA as we go.  For the last layer, this is simply the derivative of the cost
+        // function.  It's more complex for hidden layers, as changes to the activation function will
+        // impact the output of each neuron in the next layer.
+        double normalizedLearningRate = learningRate / X_batch.numCols();
+        SimpleMatrix dCdA = A.minus(Y_batch);
+
+        for (int L = layers.size()-1; L >= 0; L--) {
+            Layer layer = layers.get(L);
+            layer.calculateGradients(dCdA);
+
+            // set dC/dA for the previous layer (l-1)
+            if (L > 0) {
+                SimpleMatrix dCdZ = layer.getDCdZ();
+                dCdA = layer.getWeights().transpose().mult(dCdZ);
+            }
+        }
+
+        // update the weights and biases
+        layers.forEach(layer -> layer.updateWeightsAndBias(normalizedLearningRate));
     }
 
     /**
