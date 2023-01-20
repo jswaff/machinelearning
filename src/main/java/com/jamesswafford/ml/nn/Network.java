@@ -46,12 +46,16 @@ public class Network {
      * Train the network
      * Note- the network should already be initialized.
      *
+     * This method requires the training and test sets be loaded into memory, which is not very memory efficient
+     * for large data sets.  For a more memory efficient alternative, see the other train() function which
+     * uses a callback to retrieve one mini-batch at a time.
+     *
      * @param X_train - input matrix of shape n x m, where n is the number of features and m is the number of training examples
      * @param Y_train - labels, of shape L x m, where L is the number of outputs and m is the number of training examples
      * @param numEpochs - the number of epochs
-     * @param miniBatchSize - the size of the mini batches.  Note the last batch may be smaller.
-     * @param learningRate - the learning rate.
-     * @param X_test - test samples (optional).  If provided, the cost will be output every 10 epochs.
+     * @param miniBatchSize - the size of the mini batches.  Note the last batch may be smaller
+     * @param learningRate - the learning rate
+     * @param X_test - test samples (optional).  If provided, the cost will be output every 10 epochs
      * @param Y_test - test labels (optional)
      */
     public void train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
@@ -69,6 +73,17 @@ public class Network {
                 numEpochs, learningRate, X_test, Y_test);
     }
 
+    /**
+     * Train the network
+     * Note- the network should already be initialized.
+     *
+     * @param numMiniBatches - the number of mini batches.  Note the last batch may be smaller
+     * @param miniBatchFunc - callback function to retrieve one mini-batch of training data
+     * @param numEpochs - the number of epochs
+     * @param learningRate - the learning rate
+     * @param X_test - test samples (optional).  If provided, the cost will be output every 10 epochs
+     * @param Y_test - test labels (optional)
+     */
     public void train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
@@ -93,37 +108,6 @@ public class Network {
                 }
             }
         }
-    }
-
-    private void processMinibatch(SimpleMatrix X_batch, SimpleMatrix Y_batch, double learningRate) {
-
-        // feed forward
-        SimpleMatrix A = X_batch;
-        for (Layer layer : layers) {
-            Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
-            A = Z_A.getValue1();
-        }
-
-        // backwards propagation
-        // we update dC/dA as we go.  For the last layer, this is simply the derivative of the cost
-        // function.  It's more complex for hidden layers, as changes to the activation function will
-        // impact the output of each neuron in the next layer.
-        double normalizedLearningRate = learningRate / X_batch.numCols();
-        SimpleMatrix dCdA = A.minus(Y_batch);
-
-        for (int L = layers.size()-1; L >= 0; L--) {
-            Layer layer = layers.get(L);
-            layer.calculateGradients(dCdA);
-
-            // set dC/dA for the previous layer (l-1)
-            if (L > 0) {
-                SimpleMatrix dCdZ = layer.getDCdZ();
-                dCdA = layer.getWeights().transpose().mult(dCdZ);
-            }
-        }
-
-        // update the weights and biases
-        layers.forEach(layer -> layer.updateWeightsAndBias(normalizedLearningRate));
     }
 
     /**
@@ -175,6 +159,37 @@ public class Network {
     public static Network fromJson(String json) {
         Network.NetworkState state = new Gson().fromJson(json, Network.NetworkState.class);
         return fromState(state);
+    }
+
+    private void processMinibatch(SimpleMatrix X_batch, SimpleMatrix Y_batch, double learningRate) {
+
+        // feed forward
+        SimpleMatrix A = X_batch;
+        for (Layer layer : layers) {
+            Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
+            A = Z_A.getValue1();
+        }
+
+        // backwards propagation
+        // we update dC/dA as we go.  For the last layer, this is simply the derivative of the cost
+        // function.  It's more complex for hidden layers, as changes to the activation function will
+        // impact the output of each neuron in the next layer.
+        double normalizedLearningRate = learningRate / X_batch.numCols();
+        SimpleMatrix dCdA = A.minus(Y_batch);
+
+        for (int L = layers.size()-1; L >= 0; L--) {
+            Layer layer = layers.get(L);
+            layer.calculateGradients(dCdA);
+
+            // set dC/dA for the previous layer (l-1)
+            if (L > 0) {
+                SimpleMatrix dCdZ = layer.getDCdZ();
+                dCdA = layer.getWeights().transpose().mult(dCdZ);
+            }
+        }
+
+        // update the weights and biases
+        layers.forEach(layer -> layer.updateWeightsAndBias(normalizedLearningRate));
     }
 
     @Data
