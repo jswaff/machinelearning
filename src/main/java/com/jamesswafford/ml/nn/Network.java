@@ -87,7 +87,7 @@ public class Network {
     public void train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
-        StopEvaluator stopEvaluator = new StopEvaluator(10, null);
+        StopEvaluator stopEvaluator = new StopEvaluator(this, 10, null);
 
         for (int i=0;i<numEpochs;i++) {
 
@@ -104,6 +104,7 @@ public class Network {
                 System.out.println("\tcost(" + i + "): " + cost);
                 if (stopEvaluator.stop(cost)) {
                     System.out.println("\tearly stop triggered");
+                    fromState(stopEvaluator.getBestNetwork());
                     break;
                 }
             }
