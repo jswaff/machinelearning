@@ -69,7 +69,6 @@ execution complete.  bye.
 
 ### To Do
 
-* early stopping criteria
 * regularization - L2, possibly drop out
 * abstract away the EJML (linear algebra library) stuff from the interface
 * softmax activation function
