@@ -57,8 +57,10 @@ public class Network {
      * @param learningRate - the learning rate
      * @param X_test - test samples (optional).  If provided, the cost will be output every 10 epochs
      * @param Y_test - test labels (optional)
+     *
+     * @return - the final network state
      */
-    public void train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
+    public NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
                       SimpleMatrix X_test, SimpleMatrix Y_test)
     {
         int m = X_train.numCols(); // number of training samples
@@ -69,7 +71,7 @@ public class Network {
             numMiniBatches++;
         }
 
-        train(numMiniBatches, batchNum -> getMiniBatch(X_train, Y_train, batchNum, miniBatchSize),
+        return train(numMiniBatches, batchNum -> getMiniBatch(X_train, Y_train, batchNum, miniBatchSize),
                 numEpochs, learningRate, X_test, Y_test);
     }
 
@@ -83,8 +85,10 @@ public class Network {
      * @param learningRate - the learning rate
      * @param X_test - test samples (optional).  If provided, the cost will be output every 10 epochs
      * @param Y_test - test labels (optional)
+     *
+     * @return - the final network state
      */
-    public void train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
+    public NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
         StopEvaluator stopEvaluator = new StopEvaluator(this, 10, null);
@@ -104,11 +108,12 @@ public class Network {
                 System.out.println("\tcost(" + i + "): " + cost);
                 if (stopEvaluator.stop(cost)) {
                     System.out.println("\tearly stop triggered");
-                    fromState(stopEvaluator.getBestNetwork());
-                    break;
+                    return stopEvaluator.getBestNetwork();
                 }
             }
         }
+
+        return getState();
     }
 
     /**
