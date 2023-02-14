@@ -108,10 +108,7 @@ public class Network {
                 System.out.println("\tcost(" + i + "): " + cost);
                 if (stopEvaluator.stop(cost)) {
                     System.out.println("\tearly stop triggered");
-                    NetworkState best = stopEvaluator.getBestNetwork();
-                    this.layers.clear();
-                    this.layers.addAll(Arrays.stream(best.layers).map(Layer::fromState).collect(Collectors.toList()));
-                    return best;
+                    return stopEvaluator.getBestNetwork();
                 }
             }
         }
