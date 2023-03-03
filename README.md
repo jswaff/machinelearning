@@ -76,4 +76,4 @@ execution complete.  bye.
 * support for other initializers, i.e. Xavier
 * support for other optimizers, i.e. Adam
 * convolutional nets
-* recurrent nets(?)
+
