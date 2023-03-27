@@ -95,18 +95,33 @@ public class Network {
 
         for (int i=0;i<numEpochs;i++) {
 
+            // train the network
             for (int j=0;j<numMiniBatches;j++) {
                 Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = miniBatchFunc.apply(j);
                 SimpleMatrix X_batch = X_Y_batch.getValue0();
                 SimpleMatrix Y_batch = X_Y_batch.getValue1();
-
                 processMinibatch(X_batch, Y_batch, learningRate);
             }
 
+            // if we have test data, calculate the cost and evaluate if we should stop
             if (X_test != null && Y_test != null && (i % 10) == 0) {
-                double cost = cost(predict(X_test), Y_test);
-                System.out.println("\tcost(" + i + "): " + cost);
-                if (stopEvaluator.stop(cost)) {
+
+                // calculate the cost using the training data
+                double costTraining = 0.0;
+                for (int j=0;j<numMiniBatches;j++) {
+                    Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = miniBatchFunc.apply(j);
+                    SimpleMatrix X_batch = X_Y_batch.getValue0();
+                    SimpleMatrix Y_batch = X_Y_batch.getValue1();
+                    costTraining += cost(predict(X_batch), Y_batch);
+                }
+                costTraining /= numMiniBatches;
+
+                // calculate the cost using the test data
+                double costTest = cost(predict(X_test), Y_test);
+
+                System.out.println(i + "," + costTraining + "," + costTest);
+
+                if (stopEvaluator.stop(costTest)) {
                     System.out.println("\tearly stop triggered");
                     return stopEvaluator.getBestNetwork();
                 }
