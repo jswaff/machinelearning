@@ -2,11 +2,13 @@ package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.ActivationFunctionFactory;
+import com.jamesswafford.ml.nn.util.MatrixUtil;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.Random;
 
