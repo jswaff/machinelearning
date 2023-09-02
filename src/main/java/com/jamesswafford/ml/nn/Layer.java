@@ -61,7 +61,7 @@ public class Layer {
         b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
     }
 
-    public SimpleMatrix getWeights() { return MatrixUtil.transform(w); }
+    public INDArray getWeights() { return w; }
 
     public Double getWeight(int unit, int prevUnit) { // TODO: unbox
         return w.getDouble(unit, prevUnit);
@@ -71,7 +71,7 @@ public class Layer {
         w.putScalar(unit, prevUnit, val);
     }
 
-    public SimpleMatrix getBiases() { return MatrixUtil.transform(b); }
+    public INDArray getBiases() { return b; }
 
     public Double getBias(int unit) { // TODO: unbox
         return b.getDouble(unit, 0);
@@ -92,10 +92,10 @@ public class Layer {
      *         Each matrix has shape l x m, where l is the number of units in this layer, and m is the number of
      *         training examples.
      */
-    public Pair<SimpleMatrix, SimpleMatrix> feedForward(SimpleMatrix X) {
-        this.X = MatrixUtil.transform(X);
+    public Pair<INDArray, INDArray> feedForward(INDArray X) {
+        this.X = X;
 
-        Z = w.mmul(this.X).add(b); // TODO: the add does a copy
+        Z = w.mmul(X).add(b); // TODO: the add does a copy
 
         // TODO: is there a better way to map the activation function?  Look into Transform Op
         double[][] a_vals = new double[Z.rows()][Z.columns()];
@@ -106,7 +106,7 @@ public class Layer {
         }
         A = Nd4j.create(a_vals);
 
-        return new Pair<>(MatrixUtil.transform(Z), MatrixUtil.transform(A));
+        return new Pair<>(Z, A);
     }
 
     /**

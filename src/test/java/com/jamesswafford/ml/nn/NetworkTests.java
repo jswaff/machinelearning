@@ -3,6 +3,7 @@ package com.jamesswafford.ml.nn;
 import com.google.gson.Gson;
 import com.jamesswafford.ml.nn.activation.Sigmoid;
 import com.jamesswafford.ml.nn.cost.MSE;
+import com.jamesswafford.ml.nn.util.MatrixUtil;
 import org.junit.jupiter.api.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -132,10 +133,10 @@ public class NetworkTests {
         network.train(X, Y, 1, 1, 0.5, null, null);
 
         assertArrayEquals(new double[]{.149780716, .199561432, .249751144,  .299502287},
-                hidden.getWeights().getDDRM().getData(), epsilon);
+                MatrixUtil.transform(hidden.getWeights()).getDDRM().getData(), epsilon); // TODO
 
         assertArrayEquals(new double[]{.35891648, .408666186, .51130127, .561370121},
-                output.getWeights().getDDRM().getData(), epsilon);
+                MatrixUtil.transform(output.getWeights()).getDDRM().getData(), epsilon); // TODO
 
         // the cost after updating weights does not match Matt's, but that's because he does not update the
         // bias terms.  Comments confirm the correct value is 0.28047144679143016
@@ -180,8 +181,8 @@ public class NetworkTests {
             Layer layer2 = network2.getLayers().get(i);
             assertEquals(layer1.getNumUnits(), layer2.getNumUnits());
             assertEquals(layer1.getActivationFunction(), layer2.getActivationFunction());
-            assertArrayEquals(layer1.getWeights().getDDRM().getData(), layer2.getWeights().getDDRM().getData(), epsilon);
-            assertArrayEquals(layer1.getBiases().getDDRM().getData(), layer2.getBiases().getDDRM().getData(), epsilon);
+            assertArrayEquals(MatrixUtil.transform(layer1.getWeights()).getDDRM().getData(), MatrixUtil.transform(layer2.getWeights()).getDDRM().getData(), epsilon); // TODO
+            assertArrayEquals(MatrixUtil.transform(layer1.getBiases()).getDDRM().getData(), MatrixUtil.transform(layer2.getBiases()).getDDRM().getData(), epsilon); // TODO
         }
     }
 

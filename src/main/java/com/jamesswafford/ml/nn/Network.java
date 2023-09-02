@@ -153,12 +153,12 @@ public class Network {
     }
     public INDArray predict(INDArray X) {
 
-        SimpleMatrix A = MatrixUtil.transform(X);  // TODO
+        INDArray A = X.dup();
         for (Layer layer : layers) {
             A = layer.feedForward(A).getValue1();
         }
 
-        return MatrixUtil.transform(A);
+        return A;
     }
 
     /**
@@ -203,9 +203,9 @@ public class Network {
     private void processMinibatch(INDArray X_batch, INDArray Y_batch, double learningRate) {
 
         // feed forward
-        SimpleMatrix A = MatrixUtil.transform(X_batch); // TODO
+        INDArray A = X_batch;
         for (Layer layer : layers) {
-            Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
+            Pair<INDArray, INDArray> Z_A = layer.feedForward(A);
             A = Z_A.getValue1();
         }
 
@@ -214,16 +214,16 @@ public class Network {
         // function.  It's more complex for hidden layers, as changes to the activation function will
         // impact the output of each neuron in the next layer.
         double normalizedLearningRate = learningRate / X_batch.columns();
-        SimpleMatrix dCdA = A.minus(MatrixUtil.transform(Y_batch)); // TODO
+        INDArray dCdA = A.sub(Y_batch);
 
         for (int L = layers.size()-1; L >= 0; L--) {
             Layer layer = layers.get(L);
-            layer.calculateGradients(dCdA);
+            layer.calculateGradients(MatrixUtil.transform(dCdA));
 
             // set dC/dA for the previous layer (l-1)
             if (L > 0) {
-                SimpleMatrix dCdZ = MatrixUtil.transform(layer.getDCdZ());
-                dCdA = layer.getWeights().transpose().mult(dCdZ);
+                INDArray dCdZ = layer.getDCdZ();
+                dCdA = layer.getWeights().transpose().mmul(dCdZ);
             }
         }
 
