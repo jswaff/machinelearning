@@ -161,8 +161,8 @@ public class Layer {
     public void updateWeightsAndBias(double learningRate) {
         // no multiply operator
         double reciprocalLearningRate = 1.0 / learningRate;
-        w = w.sub(dCdW.div(reciprocalLearningRate));  // TODO: this does a copy
-        b = b.sub(dCdb.div(reciprocalLearningRate));  // TODO: this does a copy
+        w.subi(dCdW.div(reciprocalLearningRate));  // TODO: this does a copy
+        b.subi(dCdb.div(reciprocalLearningRate));  // TODO: this does a copy
     }
 
     private SimpleMatrix calculateZPrime() {
