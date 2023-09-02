@@ -3,15 +3,17 @@ package com.jamesswafford.ml.nn;
 import com.google.gson.Gson;
 import com.jamesswafford.ml.nn.activation.Sigmoid;
 import com.jamesswafford.ml.nn.cost.MSE;
-import org.ejml.simple.SimpleMatrix;
 import org.junit.jupiter.api.Test;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.List;
 
-import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NetworkTests {
+
+    private static final double epsilon = 0.00001;
 
     @Test
     public void andGate() {
@@ -23,12 +25,8 @@ public class NetworkTests {
 
         network.initialize();
 
-        SimpleMatrix X = new SimpleMatrix(2, 4, true,
-                new double[]{ 0, 0, 1, 1,
-                              0, 1, 1, 0 });
-        // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 4, true,
-                new double[]{ 0, 0, 1, 0 });
+        INDArray X = Nd4j.create(new double[][] {{0,0,1,1}, {0,1,1,0}});
+        INDArray Y = Nd4j.create(new double[]{0,0,1,0}, new int[]{1,4});
 
         train(network, X, Y);
     }
@@ -46,13 +44,8 @@ public class NetworkTests {
 
         network.initialize();
 
-        SimpleMatrix X = new SimpleMatrix(2, 4, true,
-                new double[]{ 0, 0, 1, 1,
-                              0, 1, 1, 0 });
-
-        // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 4, true,
-                new double[]{ 0, 1, 0, 1});
+        INDArray X = Nd4j.create(new double[][] {{0,0,1,1},{0,1,1,0}});
+        INDArray Y = Nd4j.create(new double[]{0,1,0,1}, new int[]{1,4});
 
         train(network, X, Y);
     }
@@ -75,14 +68,12 @@ public class NetworkTests {
 
         network.initialize();
 
-        SimpleMatrix X = new SimpleMatrix(3, 8, true,
-                new double[]{ 0,0,0,0,1,1,1,1,
-                              0,0,1,1,0,0,1,1,
-                              0,1,0,1,0,1,0,1 });
-
-        // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 8, true,
-                new double[]{ 0,0,0,0,1,0,0,0 });
+        INDArray X = Nd4j.create(new double[][] {
+                {0,0,0,0,1,1,1,1},
+                {0,0,1,1,0,0,1,1},
+                {0,1,0,1,0,1,0,1}
+        });
+        INDArray Y = Nd4j.create(new double[]{ 0,0,0,0,1,0,0,0 }, new int[]{1,8});
 
         train(network, X, Y);
     }
@@ -102,15 +93,14 @@ public class NetworkTests {
 
         network.initialize();
 
-        SimpleMatrix X = new SimpleMatrix(4, 16, true,
-                new double[]{ 0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
-                              0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,
-                              0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,
-                              0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1 });
+        INDArray X = Nd4j.create(new double[][] {
+                {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1},
+                {0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1},
+                {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1},
+                {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1}
+        }) ;
 
-        // labels
-        SimpleMatrix Y = new SimpleMatrix(1, 16, true,
-                new double[]{ 0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0 });
+        INDArray Y = Nd4j.create(new double[]{ 0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0 }, new int[]{1,16});
 
         train(network, X, Y);
     }
@@ -122,42 +112,42 @@ public class NetworkTests {
         Layer hidden = network.getLayers().get(0);
         Layer output = network.getLayers().get(1);
 
-        SimpleMatrix X = new SimpleMatrix(2, 1, true, new double[] {0.05, 0.10});
-        SimpleMatrix Y = new SimpleMatrix(2, 1, true, new double[] {0.01, 0.99});
+        INDArray X = Nd4j.create(new double[]{0.05,0.10}, new int[]{2,1});
+        INDArray Y = Nd4j.create(new double[]{0.01,0.99}, new int[]{2,1});
 
-        SimpleMatrix P = network.predict(X);
+        INDArray P = network.predict(X);
 
-        assertDoubleEquals(0.3775, hidden.getZ().getDouble(0, 0));
-        assertArrayEquals(new double[] { .593269992, .596884378}, hidden.getA().toDoubleVector(), 0.00001);
+        assertEquals(0.3775, hidden.getZ().getDouble(0, 0), epsilon);
+        assertArrayEquals(new double[] { .593269992, .596884378}, hidden.getA().toDoubleVector(), epsilon);
 
-        assertDoubleEquals(1.10590597, output.getZ().getDouble(0, 0));
-        assertArrayEquals(new double[]{ .75136507, .772928465 }, output.getA().toDoubleVector(), 0.00001);
-        assertArrayEquals(new double[]{ .75136507, .772928465 }, P.getDDRM().getData(), 0.00001);
+        assertEquals(1.10590597, output.getZ().getDouble(0, 0), epsilon);
+        assertArrayEquals(new double[]{ .75136507, .772928465 }, output.getA().toDoubleVector(), epsilon);
+        assertArrayEquals(new double[]{ .75136507, .772928465 }, P.toDoubleVector(), epsilon);
 
         // test the initial cost
         double cost = network.cost(P, Y);
-        assertDoubleEquals(0.2983711087600027, cost);
+        assertEquals(0.2983711087600027, cost, epsilon);
 
         // do one forward and backward pass
         network.train(X, Y, 1, 1, 0.5, null, null);
 
-        assertDoubleEquals(new double[]{.149780716, .199561432, .249751144,  .299502287},
-                hidden.getWeights().getDDRM().getData());
+        assertArrayEquals(new double[]{.149780716, .199561432, .249751144,  .299502287},
+                hidden.getWeights().getDDRM().getData(), epsilon);
 
-        assertDoubleEquals(new double[]{.35891648, .408666186, .51130127, .561370121},
-                output.getWeights().getDDRM().getData());
+        assertArrayEquals(new double[]{.35891648, .408666186, .51130127, .561370121},
+                output.getWeights().getDDRM().getData(), epsilon);
 
         // the cost after updating weights does not match Matt's, but that's because he does not update the
         // bias terms.  Comments confirm the correct value is 0.28047144679143016
-        SimpleMatrix P2 = network.predict(X);
+        INDArray P2 = network.predict(X);
         double cost2 = network.cost(P2, Y);
-        assertDoubleEquals(0.28047144679143016, cost2);
+        assertEquals(0.28047144679143016, cost2, epsilon);
 
         // Matt gives an error of 3.510187782978859E-5 after 10,000 epochs, but again this is without updating biases
         // with bias updates the cost is 2.4475622359322466E-6
         Network network2 = buildExampleNetworkFromMM();
         network2.train(X, Y, 10000, 1, 0.5, null, null);
-        assertDoubleEquals(2.4475622359322466E-6, network2.cost(network2.predict(X), Y));
+        assertEquals(2.4475622359322466E-6, network2.cost(network2.predict(X), Y), epsilon);
     }
 
     @Test
@@ -190,20 +180,22 @@ public class NetworkTests {
             Layer layer2 = network2.getLayers().get(i);
             assertEquals(layer1.getNumUnits(), layer2.getNumUnits());
             assertEquals(layer1.getActivationFunction(), layer2.getActivationFunction());
-            assertDoubleEquals(layer1.getWeights().getDDRM().getData(), layer2.getWeights().getDDRM().getData());
-            assertDoubleEquals(layer1.getBiases().getDDRM().getData(), layer2.getBiases().getDDRM().getData());
+            assertArrayEquals(layer1.getWeights().getDDRM().getData(), layer2.getWeights().getDDRM().getData(), epsilon);
+            assertArrayEquals(layer1.getBiases().getDDRM().getData(), layer2.getBiases().getDDRM().getData(), epsilon);
         }
     }
 
-    private void train(Network network, SimpleMatrix X, SimpleMatrix Y) {
+    private void train(Network network, INDArray X, INDArray Y) {
 
         // train the network
-        network.train(X, Y, 100000, X.numCols(), 3.0, null, null);
+        network.train(X, Y, 100000, X.columns(), 3.0, null, null);
 
-        Y.print();
+        //Y.print();
+        System.out.println(Y);
 
-        SimpleMatrix P = network.predict(X);
-        P.print();
+        INDArray P = network.predict(X);
+        //P.print();
+        System.out.println(P);
         double cost = network.cost(P, Y);
         System.out.println("cost: " + cost);
     }

@@ -14,6 +14,8 @@ import static org.mockito.Mockito.*;
 
 public class LayerTests {
 
+    private static final double epsilon = 0.00001;
+
     ActivationFunction aFunc = new ActivationFunction() {
         @Override
         public String getName() {

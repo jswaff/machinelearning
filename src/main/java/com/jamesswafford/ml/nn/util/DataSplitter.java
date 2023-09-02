@@ -1,7 +1,8 @@
 package com.jamesswafford.ml.nn.util;
 
-import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
 public class DataSplitter {
 
@@ -16,32 +17,16 @@ public class DataSplitter {
      * @return the X, Y matrices of for the mini-batch.  The X matrix wll have dimensions n x batch size, and the
      *    Y matrix will have dimensions 1 x batch size.
      */
-    public static Pair<SimpleMatrix, SimpleMatrix> getMiniBatch(SimpleMatrix X, SimpleMatrix Y, int batchNumber,
-                                                                int batchSize) {
+    public static Pair<INDArray, INDArray> getMiniBatch(INDArray X, INDArray Y, int batchNumber, int batchSize) {
 
         int startInd = batchNumber * batchSize; // inclusive
         int endInd = (batchNumber+1) * batchSize; // exclusive
-        if (endInd > X.numCols()) {
-            endInd = X.numCols();
-        }
-        int actualBatchSize = endInd - startInd;
-
-        SimpleMatrix X_batch = new SimpleMatrix(X.numRows(), actualBatchSize);
-        SimpleMatrix Y_batch = new SimpleMatrix(Y.numRows(), actualBatchSize);
-
-        for (int r=0;r<X.numRows();r++) {
-            int batchCol=0;
-            for (int c=startInd;c<endInd;c++) {
-                X_batch.set(r, batchCol++, X.get(r, c));
-            }
+        if (endInd > X.columns()) {
+            endInd = X.columns();
         }
 
-        for (int r=0;r<Y.numRows();r++) {
-            int batchCol=0;
-            for (int c=startInd;c<endInd;c++) {
-                Y_batch.set(r, batchCol++, Y.get(r, c));
-            }
-        }
+        INDArray X_batch = X.get(NDArrayIndex.all(), NDArrayIndex.interval(startInd, endInd));
+        INDArray Y_batch = Y.get(NDArrayIndex.all(), NDArrayIndex.interval(startInd, endInd));
 
         return new Pair<>(X_batch, Y_batch);
     }

@@ -9,6 +9,7 @@ import com.jamesswafford.ml.nn.util.StopEvaluator;
 import lombok.*;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.*;
 import java.util.function.Function;
@@ -61,14 +62,21 @@ public class Network {
      *
      * @return - the final network state
      */
+    @Deprecated
     public NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
-                      SimpleMatrix X_test, SimpleMatrix Y_test)
+                              SimpleMatrix X_test, SimpleMatrix Y_test)
     {
-        int m = X_train.numCols(); // number of training samples
+        return train(MatrixUtil.transform(X_train), MatrixUtil.transform(Y_train), numEpochs, miniBatchSize, learningRate,
+                MatrixUtil.transform(X_test), MatrixUtil.transform(Y_test));
+    }
+    public NetworkState train(INDArray X_train, INDArray Y_train, int numEpochs, int miniBatchSize, double learningRate,
+                      INDArray X_test, INDArray Y_test)
+    {
+        int m = X_train.columns(); // number of training samples
 
         // split the data up into mini-batches
         int numMiniBatches = m / miniBatchSize;
-        if ((X_train.numCols() % miniBatchSize) != 0) {
+        if ((X_train.columns() % miniBatchSize) != 0) {
             numMiniBatches++;
         }
 
@@ -89,8 +97,8 @@ public class Network {
      *
      * @return - the final network state
      */
-    public NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
-                      int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
+    public NetworkState train(int numMiniBatches, Function<Integer, Pair<INDArray, INDArray>> miniBatchFunc,
+                      int numEpochs, double learningRate, INDArray X_test, INDArray Y_test)
     {
         StopEvaluator stopEvaluator = new StopEvaluator(this, 10, null);
 
@@ -98,9 +106,9 @@ public class Network {
 
             // train the network
             for (int j=0;j<numMiniBatches;j++) {
-                Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = miniBatchFunc.apply(j);
-                SimpleMatrix X_batch = X_Y_batch.getValue0();
-                SimpleMatrix Y_batch = X_Y_batch.getValue1();
+                Pair<INDArray, INDArray> X_Y_batch = miniBatchFunc.apply(j);
+                INDArray X_batch = X_Y_batch.getValue0();
+                INDArray Y_batch = X_Y_batch.getValue1();
                 processMinibatch(X_batch, Y_batch, learningRate);
             }
 
@@ -110,9 +118,9 @@ public class Network {
                 // calculate the cost using the training data
                 double costTraining = 0.0;
                 for (int j=0;j<numMiniBatches;j++) {
-                    Pair<SimpleMatrix, SimpleMatrix> X_Y_batch = miniBatchFunc.apply(j);
-                    SimpleMatrix X_batch = X_Y_batch.getValue0();
-                    SimpleMatrix Y_batch = X_Y_batch.getValue1();
+                    Pair<INDArray, INDArray> X_Y_batch = miniBatchFunc.apply(j);
+                    INDArray X_batch = X_Y_batch.getValue0();
+                    INDArray Y_batch = X_Y_batch.getValue1();
                     costTraining += cost(predict(X_batch), Y_batch);
                 }
                 costTraining /= numMiniBatches;
@@ -138,14 +146,19 @@ public class Network {
      * @param X - input matrix of shape n x m, where n is the number of features and m is the number of training examples
      * @return prediction matrix, of shape L x m, where L is the number of outputs and m is the number of training examples
      */
-    public SimpleMatrix predict(SimpleMatrix X) {
 
-        SimpleMatrix A = X;
+    @Deprecated
+    public SimpleMatrix predict(SimpleMatrix X) {
+        return MatrixUtil.transform(predict(MatrixUtil.transform(X)));
+    }
+    public INDArray predict(INDArray X) {
+
+        SimpleMatrix A = MatrixUtil.transform(X);  // TODO
         for (Layer layer : layers) {
             A = layer.feedForward(A).getValue1();
         }
 
-        return A;
+        return MatrixUtil.transform(A);
     }
 
     /**
@@ -156,7 +169,11 @@ public class Network {
      *
      * @return - the cost
      */
+    @Deprecated
     public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
+        return costFunction.cost(predictions, labels);
+    }
+    public double cost(INDArray predictions, INDArray labels) {
         return costFunction.cost(predictions, labels);
     }
 
@@ -183,10 +200,10 @@ public class Network {
         return fromState(state);
     }
 
-    private void processMinibatch(SimpleMatrix X_batch, SimpleMatrix Y_batch, double learningRate) {
+    private void processMinibatch(INDArray X_batch, INDArray Y_batch, double learningRate) {
 
         // feed forward
-        SimpleMatrix A = X_batch;
+        SimpleMatrix A = MatrixUtil.transform(X_batch); // TODO
         for (Layer layer : layers) {
             Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(A);
             A = Z_A.getValue1();
@@ -196,8 +213,8 @@ public class Network {
         // we update dC/dA as we go.  For the last layer, this is simply the derivative of the cost
         // function.  It's more complex for hidden layers, as changes to the activation function will
         // impact the output of each neuron in the next layer.
-        double normalizedLearningRate = learningRate / X_batch.numCols();
-        SimpleMatrix dCdA = A.minus(Y_batch);
+        double normalizedLearningRate = learningRate / X_batch.columns();
+        SimpleMatrix dCdA = A.minus(MatrixUtil.transform(Y_batch)); // TODO
 
         for (int L = layers.size()-1; L >= 0; L--) {
             Layer layer = layers.get(L);

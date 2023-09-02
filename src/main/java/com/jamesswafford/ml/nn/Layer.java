@@ -51,33 +51,29 @@ public class Layer {
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
         Random rand = new Random(seed);
-        //w = new SimpleMatrix(numUnits, numUnitsPreviousLayer);
         w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
+        // TODO: initialize with rand() and then .subi(0.5)
         for (int r=0;r<numUnits;r++) {
             for (int c=0;c<numUnitsPreviousLayer;c++) {
                 w.putScalar(r, c, rand.nextDouble()-0.5);
             }
         }
         b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
-        //b = new SimpleMatrix(numUnits, 1);
-        //for (int r=0;r<numUnits;r++) {
-        //    b.putScalar(r, 0, 0.0D);
-        //}
     }
 
     public SimpleMatrix getWeights() { return MatrixUtil.transform(w); }
 
-    public Double getWeight(int unit, int prevUnit) {
+    public Double getWeight(int unit, int prevUnit) { // TODO: unbox
         return w.getDouble(unit, prevUnit);
     }
 
-    public void setWeight(int unit, int prevUnit, Double val) {
+    public void setWeight(int unit, int prevUnit, Double val) { // TODO: unbox
         w.putScalar(unit, prevUnit, val);
     }
 
     public SimpleMatrix getBiases() { return MatrixUtil.transform(b); }
 
-    public Double getBias(int unit) {
+    public Double getBias(int unit) { // TODO: unbox
         return b.getDouble(unit, 0);
     }
 
@@ -99,14 +95,9 @@ public class Layer {
     public Pair<SimpleMatrix, SimpleMatrix> feedForward(SimpleMatrix X) {
         this.X = MatrixUtil.transform(X);
 
-        // there is no "broadcast" operator in the OO interface of the EJML lib.
-        // if there were (column) broadcasting we could do something like w.mult(X).bcPlus(b);
-        Z = w.mmul(this.X).add(b);
-        //for (int m=0;m<Z.columns();m++) {
-        //    Z.setColumn(m, 0, Z.extractVector(false, m).plus(b).getDDRM().getData());
-        //}
+        Z = w.mmul(this.X).add(b); // TODO: the add does a copy
 
-        //A = new SimpleMatrix(Z.numRows(), Z.numCols());
+        // TODO: is there a better way to map the activation function?  Look into Transform Op
         double[][] a_vals = new double[Z.rows()][Z.columns()];
         for (int r=0;r<Z.rows();r++) {
             for (int c=0;c<Z.columns();c++) {
@@ -147,6 +138,7 @@ public class Layer {
         // adjust the biases
         SimpleMatrix my_dCdb = new SimpleMatrix(b.rows(), 1);
         for (int r=0;r<b.rows();r++) {
+            // TODO: a faster way to add across the row?
             double dbVal = 0.0;
             for (int c=0;c<my_dCdZ.numCols();c++) {
                 dbVal += my_dCdZ.get(r, c);
@@ -169,14 +161,15 @@ public class Layer {
     public void updateWeightsAndBias(double learningRate) {
         // no multiply operator
         double reciprocalLearningRate = 1.0 / learningRate;
-        w = w.sub(dCdW.div(reciprocalLearningRate));
-        b = b.sub(dCdb.div(reciprocalLearningRate));
+        w = w.sub(dCdW.div(reciprocalLearningRate));  // TODO: this does a copy
+        b = b.sub(dCdb.div(reciprocalLearningRate));  // TODO: this does a copy
     }
 
     private SimpleMatrix calculateZPrime() {
         SimpleMatrix Z_prime = new SimpleMatrix(Z.rows(), Z.columns());
 
         // unfortunately no broadcast operator
+        // TODO: is there a faster way to map the activation function?  Look at Transform Ops
         for (int r=0;r<Z_prime.numRows();r++) {
             for (int c=0;c<Z_prime.numCols();c++) {
                 Z_prime.set(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
@@ -191,9 +184,7 @@ public class Layer {
 
     public static Layer fromState(LayerState state) {
         Layer layer = new Layer(state.numUnits, ActivationFunctionFactory.create(state.activationFunction));
-        //layer.w = new SimpleMatrix(state.numUnits, state.prevUnits, true, state.weights);
         layer.w = Nd4j.create(state.weights);
-        //layer.b = new SimpleMatrix(state.numUnits, 1, true, state.biases);
         layer.b = Nd4j.create(state.biases);
         return layer;
     }
