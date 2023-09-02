@@ -218,7 +218,7 @@ public class Network {
 
         for (int L = layers.size()-1; L >= 0; L--) {
             Layer layer = layers.get(L);
-            layer.calculateGradients(MatrixUtil.transform(dCdA));
+            layer.calculateGradients(dCdA);
 
             // set dC/dA for the previous layer (l-1)
             if (L > 0) {

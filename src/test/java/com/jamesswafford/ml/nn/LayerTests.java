@@ -132,9 +132,9 @@ public class LayerTests {
 
         // back prop
         SimpleMatrix dCdA = new SimpleMatrix(4, 1, true, new double[] { 0, 1, -1, 0.5 });
-        Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateGradients(dCdA);
-        SimpleMatrix dCdW = dCdW_dCdb.getValue0();
-        SimpleMatrix dCdb = dCdW_dCdb.getValue1();
+        Pair<INDArray, INDArray> dCdW_dCdb = layer.calculateGradients(MatrixUtil.transform(dCdA)); // TODO
+        SimpleMatrix dCdW = MatrixUtil.transform(dCdW_dCdb.getValue0()); // TODO
+        SimpleMatrix dCdb = MatrixUtil.transform(dCdW_dCdb.getValue1()); // TODO
 
         // the delta weights should be the same shape as the weights matrix
         assertEquals(4, dCdW.numRows());
@@ -212,9 +212,9 @@ public class LayerTests {
         // the second input has no error, so the adjustments should be half of the first problem
         SimpleMatrix dCdA = new SimpleMatrix(4, 2, false,
                 new double[] { 0, 1, -1, 0.5, 0, 0, 0, 0 }); // no error second input
-        Pair<SimpleMatrix, SimpleMatrix> dCdW_dCdb = layer.calculateGradients(dCdA);
-        SimpleMatrix dCdW = dCdW_dCdb.getValue0();
-        SimpleMatrix dCdb = dCdW_dCdb.getValue1();
+        Pair<INDArray, INDArray> dCdW_dCdb = layer.calculateGradients(MatrixUtil.transform(dCdA)); // TODO
+        SimpleMatrix dCdW = MatrixUtil.transform(dCdW_dCdb.getValue0()); // TODO
+        SimpleMatrix dCdb = MatrixUtil.transform(dCdW_dCdb.getValue1()); // TODO
 
         assertEquals(4, dCdW.numRows());
         assertEquals(3, dCdW.numCols());

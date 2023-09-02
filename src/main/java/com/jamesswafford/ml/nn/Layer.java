@@ -2,11 +2,9 @@ package com.jamesswafford.ml.nn;
 
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.ActivationFunctionFactory;
-import com.jamesswafford.ml.nn.util.MatrixUtil;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -125,32 +123,28 @@ public class Layer {
      * @return dCdW - the partial derivative of the cost function with respect to weights
      *         dCdB - the partial derivative of the cost function with respect to biases
      */
-    public Pair<SimpleMatrix, SimpleMatrix> calculateGradients(SimpleMatrix dCdA) {
+    public Pair<INDArray, INDArray> calculateGradients(INDArray dCdA) {
 
         int m = X.columns();
-        SimpleMatrix my_X = MatrixUtil.transform(X);
 
         // adjust the weights
-        SimpleMatrix dAdZ = calculateZPrime();
-        SimpleMatrix my_dCdZ = dCdA.elementMult(dAdZ);
-        SimpleMatrix my_dCdW = my_dCdZ.mult(my_X.transpose()).divide(m);
+        INDArray dAdZ = calculateZPrime();
+        dCdZ = dCdA.mul(dAdZ);
+        dCdW = dCdZ.mmul(X.transpose()).div(m); // TODO
 
         // adjust the biases
-        SimpleMatrix my_dCdb = new SimpleMatrix(b.rows(), 1);
+        dCdb = Nd4j.create(b.rows(), 1);
         for (int r=0;r<b.rows();r++) {
             // TODO: a faster way to add across the row?
             double dbVal = 0.0;
-            for (int c=0;c<my_dCdZ.numCols();c++) {
-                dbVal += my_dCdZ.get(r, c);
+            for (int c=0;c<dCdZ.columns();c++) {
+                dbVal += dCdZ.getDouble(r, c);
             }
-            my_dCdb.set(r, 0, dbVal / m);
+            dCdb.putScalar(r, 0, dbVal / m);
         }
 
-        this.dCdZ = MatrixUtil.transform(my_dCdZ);
-        this.dCdW = MatrixUtil.transform(my_dCdW);
-        this.dCdb = MatrixUtil.transform(my_dCdb);
 
-        return new Pair<>(my_dCdW, my_dCdb);
+        return new Pair<>(dCdW, dCdb);
     }
 
     /**
@@ -165,14 +159,13 @@ public class Layer {
         b.subi(dCdb.div(reciprocalLearningRate));  // TODO: this does a copy
     }
 
-    private SimpleMatrix calculateZPrime() {
-        SimpleMatrix Z_prime = new SimpleMatrix(Z.rows(), Z.columns());
+    private INDArray calculateZPrime() {
+        INDArray Z_prime = Nd4j.create(Z.rows(), Z.columns());
 
-        // unfortunately no broadcast operator
         // TODO: is there a faster way to map the activation function?  Look at Transform Ops
-        for (int r=0;r<Z_prime.numRows();r++) {
-            for (int c=0;c<Z_prime.numCols();c++) {
-                Z_prime.set(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
+        for (int r=0;r<Z_prime.rows();r++) {
+            for (int c=0;c<Z_prime.columns();c++) {
+                Z_prime.putScalar(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
             }
         }
         return Z_prime;
