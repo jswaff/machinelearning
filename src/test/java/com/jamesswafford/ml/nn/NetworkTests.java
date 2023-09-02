@@ -127,12 +127,12 @@ public class NetworkTests {
 
         SimpleMatrix P = network.predict(X);
 
-        assertDoubleEquals(0.3775, hidden.getZ().get(0, 0));
-        assertDoubleEquals(new double[] { .593269992, .596884378}, hidden.getA().getDDRM().getData());
+        assertDoubleEquals(0.3775, hidden.getZ().getDouble(0, 0));
+        assertArrayEquals(new double[] { .593269992, .596884378}, hidden.getA().toDoubleVector(), 0.00001);
 
-        assertDoubleEquals(1.10590597, output.getZ().get(0, 0));
-        assertDoubleEquals(new double[]{ .75136507, .772928465 }, output.getA().getDDRM().getData());
-        assertDoubleEquals(new double[]{ .75136507, .772928465 }, P.getDDRM().getData());
+        assertDoubleEquals(1.10590597, output.getZ().getDouble(0, 0));
+        assertArrayEquals(new double[]{ .75136507, .772928465 }, output.getA().toDoubleVector(), 0.00001);
+        assertArrayEquals(new double[]{ .75136507, .772928465 }, P.getDDRM().getData(), 0.00001);
 
         // test the initial cost
         double cost = network.cost(P, Y);

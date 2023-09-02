@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.Random;
 
@@ -21,21 +23,21 @@ public class Layer {
     @Getter
     private final ActivationFunction activationFunction;
 
-    private SimpleMatrix w;  // weights matrix, j x k where j = units this layer, k = prev. layer
-    private SimpleMatrix b;  // bias column vector, j x 1
+    private INDArray w;  // weights matrix, j x k where j = units this layer, k = prev. layer
+    private INDArray b;  // bias column vector, j x 1
 
     // cached during forward pass
-    private SimpleMatrix X;  // input from previous layer, n x m, where n = features and m = training examples
+    private INDArray X;  // input from previous layer, n x m, where n = features and m = training examples
     @Getter
-    private SimpleMatrix Z;  // the linear computation portion of the output, j x m
+    private INDArray Z;  // the linear computation portion of the output, j x m
     @Getter
-    private SimpleMatrix A;  // output of this layer -- g(Z), j x m
+    private INDArray A;  // output of this layer -- g(Z), j x m
 
     // cached during backward pass
     @Getter
-    private SimpleMatrix dCdZ;
-    private SimpleMatrix dCdW;
-    private SimpleMatrix dCdb;
+    private INDArray dCdZ;
+    private INDArray dCdW;
+    private INDArray dCdb;
 
     /**
      * Initialize this layer of the network by initializing the weights to small random values and
@@ -49,36 +51,38 @@ public class Layer {
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
         Random rand = new Random(seed);
-        w = new SimpleMatrix(numUnits, numUnitsPreviousLayer);
+        //w = new SimpleMatrix(numUnits, numUnitsPreviousLayer);
+        w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
         for (int r=0;r<numUnits;r++) {
             for (int c=0;c<numUnitsPreviousLayer;c++) {
-                w.set(r, c, rand.nextDouble()-0.5);
+                w.putScalar(r, c, rand.nextDouble()-0.5);
             }
         }
-        b = new SimpleMatrix(numUnits, 1);
-        for (int r=0;r<numUnits;r++) {
-            b.set(r, 0, 0.0);
-        }
+        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
+        //b = new SimpleMatrix(numUnits, 1);
+        //for (int r=0;r<numUnits;r++) {
+        //    b.putScalar(r, 0, 0.0D);
+        //}
     }
 
-    public SimpleMatrix getWeights() { return w; }
+    public SimpleMatrix getWeights() { return MatrixUtil.transform(w); }
 
     public Double getWeight(int unit, int prevUnit) {
-        return w.get(unit, prevUnit);
+        return w.getDouble(unit, prevUnit);
     }
 
     public void setWeight(int unit, int prevUnit, Double val) {
-        w.set(unit, prevUnit, val);
+        w.putScalar(unit, prevUnit, val);
     }
 
-    public SimpleMatrix getBiases() { return b; }
+    public SimpleMatrix getBiases() { return MatrixUtil.transform(b); }
 
     public Double getBias(int unit) {
-        return b.get(unit, 0);
+        return b.getDouble(unit, 0);
     }
 
     public void setBias(int unit, Double val) {
-        b.set(unit, 0, val);
+        b.putScalar(unit, 0, val);
     }
 
     /**
@@ -93,22 +97,25 @@ public class Layer {
      *         training examples.
      */
     public Pair<SimpleMatrix, SimpleMatrix> feedForward(SimpleMatrix X) {
-        this.X = X;
+        this.X = MatrixUtil.transform(X);
 
         // there is no "broadcast" operator in the OO interface of the EJML lib.
         // if there were (column) broadcasting we could do something like w.mult(X).bcPlus(b);
-        Z = w.mult(X);
-        for (int m=0;m<Z.numCols();m++) {
-            Z.setColumn(m, 0, Z.extractVector(false, m).plus(b).getDDRM().getData());
-        }
+        Z = w.mmul(this.X).add(b);
+        //for (int m=0;m<Z.columns();m++) {
+        //    Z.setColumn(m, 0, Z.extractVector(false, m).plus(b).getDDRM().getData());
+        //}
 
-        A = new SimpleMatrix(Z.numRows(), Z.numCols());
-        for (int r=0;r<A.numRows();r++) {
-            for (int c=0;c<A.numCols();c++) {
-                A.set(r, c, activationFunction.func(Z.get(r, c)));
+        //A = new SimpleMatrix(Z.numRows(), Z.numCols());
+        double[][] a_vals = new double[Z.rows()][Z.columns()];
+        for (int r=0;r<Z.rows();r++) {
+            for (int c=0;c<Z.columns();c++) {
+                a_vals[r][c] = activationFunction.func(Z.getDouble(r, c));
             }
         }
-        return new Pair<>(Z, A);
+        A = Nd4j.create(a_vals);
+
+        return new Pair<>(MatrixUtil.transform(Z), MatrixUtil.transform(A));
     }
 
     /**
@@ -129,24 +136,29 @@ public class Layer {
      */
     public Pair<SimpleMatrix, SimpleMatrix> calculateGradients(SimpleMatrix dCdA) {
 
-        int m = X.numCols();
+        int m = X.columns();
+        SimpleMatrix my_X = MatrixUtil.transform(X);
 
         // adjust the weights
         SimpleMatrix dAdZ = calculateZPrime();
-        dCdZ = dCdA.elementMult(dAdZ);
-        dCdW = dCdZ.mult(this.X.transpose()).divide(m);
+        SimpleMatrix my_dCdZ = dCdA.elementMult(dAdZ);
+        SimpleMatrix my_dCdW = my_dCdZ.mult(my_X.transpose()).divide(m);
 
         // adjust the biases
-        dCdb = new SimpleMatrix(b.numRows(), 1);
-        for (int r=0;r<b.numRows();r++) {
+        SimpleMatrix my_dCdb = new SimpleMatrix(b.rows(), 1);
+        for (int r=0;r<b.rows();r++) {
             double dbVal = 0.0;
-            for (int c=0;c<dCdZ.numCols();c++) {
-                dbVal += dCdZ.get(r, c);
+            for (int c=0;c<my_dCdZ.numCols();c++) {
+                dbVal += my_dCdZ.get(r, c);
             }
-            dCdb.set(r, 0, dbVal / m);
+            my_dCdb.set(r, 0, dbVal / m);
         }
 
-        return new Pair<>(dCdW, dCdb);
+        this.dCdZ = MatrixUtil.transform(my_dCdZ);
+        this.dCdW = MatrixUtil.transform(my_dCdW);
+        this.dCdb = MatrixUtil.transform(my_dCdb);
+
+        return new Pair<>(my_dCdW, my_dCdb);
     }
 
     /**
@@ -157,16 +169,17 @@ public class Layer {
     public void updateWeightsAndBias(double learningRate) {
         // no multiply operator
         double reciprocalLearningRate = 1.0 / learningRate;
-        w = w.minus(dCdW.divide(reciprocalLearningRate));
-        b = b.minus(dCdb.divide(reciprocalLearningRate));
+        w = w.sub(dCdW.div(reciprocalLearningRate));
+        b = b.sub(dCdb.div(reciprocalLearningRate));
     }
 
     private SimpleMatrix calculateZPrime() {
-        SimpleMatrix Z_prime = new SimpleMatrix(Z.numRows(), Z.numCols());
+        SimpleMatrix Z_prime = new SimpleMatrix(Z.rows(), Z.columns());
+
         // unfortunately no broadcast operator
         for (int r=0;r<Z_prime.numRows();r++) {
             for (int c=0;c<Z_prime.numCols();c++) {
-                Z_prime.set(r, c, activationFunction.derivativeFunc(Z.get(r, c)));
+                Z_prime.set(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
             }
         }
         return Z_prime;
@@ -178,8 +191,10 @@ public class Layer {
 
     public static Layer fromState(LayerState state) {
         Layer layer = new Layer(state.numUnits, ActivationFunctionFactory.create(state.activationFunction));
-        layer.w = new SimpleMatrix(state.numUnits, state.prevUnits, true, state.weights);
-        layer.b = new SimpleMatrix(state.numUnits, 1, true, state.biases);
+        //layer.w = new SimpleMatrix(state.numUnits, state.prevUnits, true, state.weights);
+        layer.w = Nd4j.create(state.weights);
+        //layer.b = new SimpleMatrix(state.numUnits, 1, true, state.biases);
+        layer.b = Nd4j.create(state.biases);
         return layer;
     }
 
@@ -188,15 +203,15 @@ public class Layer {
         private int numUnits;
         private int prevUnits;
         private String activationFunction;
-        private double[] weights;
+        private double[][] weights;
         private double[] biases;
 
         public LayerState(Layer layer) {
             this.numUnits = layer.numUnits;
-            this.prevUnits = layer.w.numCols();
+            this.prevUnits = layer.w.columns();
             this.activationFunction = layer.activationFunction.getName();
-            this.weights = layer.w.getDDRM().getData();
-            this.biases = layer.b.getDDRM().getData();
+            this.weights = layer.w.toDoubleMatrix();
+            this.biases = layer.b.toDoubleVector();
         }
     }
 }

@@ -55,18 +55,18 @@ public class LayerTests {
         ActivationFunction activationFunction = Mockito.mock(ActivationFunction.class);
         Layer layer = new Layer(1, activationFunction);
         layer.initialize(1);
-        layer.setWeight(0, 0, 0.1);
-        layer.setBias(0, 0.05);
+        layer.setWeight(0, 0, 0.1D);
+        layer.setBias(0, 0.05D);
 
         SimpleMatrix X = new SimpleMatrix(1, 1);
-        X.set(0, 0, 0.5);
+        X.set(0, 0, 0.5D);
 
         Pair<SimpleMatrix, SimpleMatrix> Z_A = layer.feedForward(X);
         SimpleMatrix Z = Z_A.getValue0();
 
         assertEquals(1, Z.numRows());
         assertEquals(1, Z.numCols());
-        assertEquals(0.1, Z.get(0, 0));
+        assertEquals(0.1, Z.get(0, 0), 0.00001);
 
         verify(activationFunction, times(1)).func(0.1);
     }
@@ -91,8 +91,8 @@ public class LayerTests {
         assertEquals(3, Z.numRows());
         assertEquals(1, Z.numCols());
         assertEquals(0.25, Z.get(0, 0));
-        assertEquals(0.45, Z.get(1, 0));
-        assertEquals(0.65, Z.get(2, 0));
+        assertEquals(0.45, Z.get(1, 0), 0.00001);
+        assertEquals(0.65, Z.get(2, 0), 0.00001);
 
         verify(activationFunction, times(1)).func(0.25);
         verify(activationFunction, times(1)).func(0.45);
@@ -241,8 +241,9 @@ public class LayerTests {
         assertEquals(4, state.getNumUnits());
         assertEquals(3, state.getPrevUnits());
         assertEquals("tanh", state.getActivationFunction());
-        assertEquals(12, state.getWeights().length);
-        assertDoubleEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4}, state.getWeights());
+        assertEquals(4, state.getWeights().length);
+        assertEquals(3, state.getWeights()[0].length);
+        assertArrayEquals(new double[][] {{.5,.3,.1},{.9,.5,.65},{1.2,.2,-.3},{.15,.4,.4}}, state.getWeights());
         assertEquals(4, state.getBiases().length);
         assertDoubleEquals(new double[] {.05,.05,.05,.05}, state.getBiases());
 

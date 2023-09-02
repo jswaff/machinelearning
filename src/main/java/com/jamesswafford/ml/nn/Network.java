@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
 import com.jamesswafford.ml.nn.cost.CostFunctionFactory;
+import com.jamesswafford.ml.nn.util.MatrixUtil;
 import com.jamesswafford.ml.nn.util.StopEvaluator;
 import lombok.*;
 import org.ejml.simple.SimpleMatrix;
@@ -204,7 +205,7 @@ public class Network {
 
             // set dC/dA for the previous layer (l-1)
             if (L > 0) {
-                SimpleMatrix dCdZ = layer.getDCdZ();
+                SimpleMatrix dCdZ = MatrixUtil.transform(layer.getDCdZ());
                 dCdA = layer.getWeights().transpose().mult(dCdZ);
             }
         }
