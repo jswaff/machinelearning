@@ -28,18 +28,8 @@ public class MSE implements CostFunction {
      * @return the cost over all training examples.
      */
     @Override
+    @Deprecated
     public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
-
-        /*if (predictions.numRows() != labels.numRows() || predictions.numCols() != labels.numCols()) {
-            throw new IllegalStateException("Shapes do not match.  labels: " + labels.numRows() + " x " +
-                    labels.numCols() + "; predictions: " + predictions.numRows() + " x " + predictions.numCols());
-        }
-
-        // 1/2 constant to cancel out the exponent when differentiating
-        SimpleMatrix e = predictions.minus(labels).elementPower(2).divide(2.0);
-
-        return e.elementSum() / predictions.numCols();*/
-
         return cost(MatrixUtil.transform(predictions), MatrixUtil.transform(labels));
     }
 
@@ -52,6 +42,6 @@ public class MSE implements CostFunction {
         }
         INDArray e = predictions.sub(labels);
         INDArray esq = Transforms.pow(e, 2, false);
-        return esq.div(2.0).sumNumber().doubleValue() / predictions.columns();
+        return esq.divi(2.0).sumNumber().doubleValue() / predictions.columns();
     }
 }

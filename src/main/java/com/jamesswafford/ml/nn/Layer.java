@@ -93,16 +93,15 @@ public class Layer {
     public Pair<INDArray, INDArray> feedForward(INDArray X) {
         this.X = X;
 
-        Z = w.mmul(X).add(b); // TODO: the add does a copy
+        Z = w.mmul(X).addi(b);
 
         // TODO: is there a better way to map the activation function?  Look into Transform Op
-        double[][] a_vals = new double[Z.rows()][Z.columns()];
+        A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
         for (int r=0;r<Z.rows();r++) {
             for (int c=0;c<Z.columns();c++) {
-                a_vals[r][c] = activationFunction.func(Z.getDouble(r, c));
+                A.putScalar(r, c, activationFunction.func(Z.getDouble(r, c)));
             }
         }
-        A = Nd4j.create(a_vals);
 
         return new Pair<>(Z, A);
     }
@@ -130,7 +129,7 @@ public class Layer {
         // adjust the weights
         INDArray dAdZ = calculateZPrime();
         dCdZ = dCdA.mul(dAdZ);
-        dCdW = dCdZ.mmul(X.transpose()).div(m); // TODO
+        dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
         dCdb = Nd4j.create(b.rows(), 1);
@@ -153,10 +152,8 @@ public class Layer {
      * @param  learningRate - the learning rate
      */
     public void updateWeightsAndBias(double learningRate) {
-        // no multiply operator
-        double reciprocalLearningRate = 1.0 / learningRate;
-        w.subi(dCdW.div(reciprocalLearningRate));  // TODO: this does a copy
-        b.subi(dCdb.div(reciprocalLearningRate));  // TODO: this does a copy
+        w.subi(dCdW.mul(learningRate));
+        b.subi(dCdb.mul(learningRate));
     }
 
     private INDArray calculateZPrime() {

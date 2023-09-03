@@ -153,7 +153,7 @@ public class Network {
     }
     public INDArray predict(INDArray X) {
 
-        INDArray A = X.dup();
+        INDArray A = X;
         for (Layer layer : layers) {
             A = layer.feedForward(A).getValue1();
         }
