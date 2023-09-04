@@ -4,12 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jamesswafford.ml.nn.cost.CostFunction;
 import com.jamesswafford.ml.nn.cost.CostFunctionFactory;
-import com.jamesswafford.ml.nn.util.MatrixUtil;
 import com.jamesswafford.ml.nn.util.StopEvaluator;
 import lombok.*;
-import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.*;
 import java.util.function.Function;
@@ -62,12 +61,11 @@ public class Network {
      *
      * @return - the final network state
      */
-    @Deprecated
-    public NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
-                              SimpleMatrix X_test, SimpleMatrix Y_test)
+    public NetworkState train(double[][] X_train, double[][] Y_train, int numEpochs, int miniBatchSize, double learningRate,
+                              double[][] X_test, double[][] Y_test)
     {
-        return train(MatrixUtil.transform(X_train), MatrixUtil.transform(Y_train), numEpochs, miniBatchSize, learningRate,
-                MatrixUtil.transform(X_test), MatrixUtil.transform(Y_test));
+        return train(Nd4j.create(X_train), Nd4j.create(Y_train), numEpochs, miniBatchSize, learningRate,
+                Nd4j.create(X_test), Nd4j.create(Y_test));
     }
     public NetworkState train(INDArray X_train, INDArray Y_train, int numEpochs, int miniBatchSize, double learningRate,
                       INDArray X_test, INDArray Y_test)
@@ -147,9 +145,8 @@ public class Network {
      * @return prediction matrix, of shape L x m, where L is the number of outputs and m is the number of training examples
      */
 
-    @Deprecated
-    public SimpleMatrix predict(SimpleMatrix X) {
-        return MatrixUtil.transform(predict(MatrixUtil.transform(X)));
+    public double[][] predict(double[][] X) {
+        return predict(Nd4j.create(X)).toDoubleMatrix();
     }
     public INDArray predict(INDArray X) {
 
@@ -169,9 +166,8 @@ public class Network {
      *
      * @return - the cost
      */
-    @Deprecated
-    public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
-        return costFunction.cost(predictions, labels);
+    public double cost(double[][] predictions, double[][] labels) {
+        return cost(Nd4j.create(predictions), Nd4j.create(labels));
     }
     public double cost(INDArray predictions, INDArray labels) {
         return costFunction.cost(predictions, labels);

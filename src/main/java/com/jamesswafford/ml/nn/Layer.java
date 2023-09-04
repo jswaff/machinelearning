@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.javatuples.Pair;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.transforms.strict.Sigmoid;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.Random;
 
@@ -61,21 +63,21 @@ public class Layer {
 
     public INDArray getWeights() { return w; }
 
-    public Double getWeight(int unit, int prevUnit) { // TODO: unbox
+    public double getWeight(int unit, int prevUnit) {
         return w.getDouble(unit, prevUnit);
     }
 
-    public void setWeight(int unit, int prevUnit, Double val) { // TODO: unbox
+    public void setWeight(int unit, int prevUnit, double val) {
         w.putScalar(unit, prevUnit, val);
     }
 
     public INDArray getBiases() { return b; }
 
-    public Double getBias(int unit) { // TODO: unbox
+    public double getBias(int unit) {
         return b.getDouble(unit, 0);
     }
 
-    public void setBias(int unit, Double val) {
+    public void setBias(int unit, double val) {
         b.putScalar(unit, 0, val);
     }
 
@@ -96,6 +98,7 @@ public class Layer {
         Z = w.mmul(X).addi(b);
 
         // TODO: is there a better way to map the activation function?  Look into Transform Op
+        //INDArray A = Transforms.sigmoid(Z, true);
         A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
         for (int r=0;r<Z.rows();r++) {
             for (int c=0;c<Z.columns();c++) {

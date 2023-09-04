@@ -25,12 +25,12 @@ public class LayerTests {
         }
 
         @Override
-        public Double func(Double z) {
+        public double func(double z) {
             return z * 2;
         }
 
         @Override
-        public Double derivativeFunc(Double a) {
+        public double derivativeFunc(double a) {
             return 2.0;
         }
     };

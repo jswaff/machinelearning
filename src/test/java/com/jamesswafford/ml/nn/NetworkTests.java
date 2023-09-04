@@ -182,7 +182,7 @@ public class NetworkTests {
             assertEquals(layer1.getNumUnits(), layer2.getNumUnits());
             assertEquals(layer1.getActivationFunction(), layer2.getActivationFunction());
             assertArrayEquals(MatrixUtil.transform(layer1.getWeights()).getDDRM().getData(), MatrixUtil.transform(layer2.getWeights()).getDDRM().getData(), epsilon); // TODO
-            assertArrayEquals(MatrixUtil.transform(layer1.getBiases()).getDDRM().getData(), MatrixUtil.transform(layer2.getBiases()).getDDRM().getData(), epsilon); // TODO
+            assertArrayEquals(MatrixUtil.transform(layer1.getBiases()).getDDRM().getData(), MatrixUtil.transform(layer2.getBiases()).getDDRM().getData(), epsilon);
         }
     }
 
