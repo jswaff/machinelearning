@@ -120,15 +120,15 @@ public class LayerTests {
         assertEquals(4, A.numRows());
         assertEquals(1, A.numCols());
 
-        assertDoubleEquals(0.17, Z.get(0, 0));
-        assertDoubleEquals(0.16, Z.get(1, 0));
-        assertDoubleEquals(0.29, Z.get(2, 0));
-        assertDoubleEquals(0.105, Z.get(3, 0));
+        assertEquals(0.17, Z.get(0, 0), epsilon);
+        assertEquals(0.16, Z.get(1, 0), epsilon);
+        assertEquals(0.29, Z.get(2, 0), epsilon);
+        assertEquals(0.105, Z.get(3, 0), epsilon);
 
-        assertDoubleEquals(0.17*2, A.get(0, 0));
-        assertDoubleEquals(0.16*2, A.get(1, 0));
-        assertDoubleEquals(0.29*2, A.get(2, 0));
-        assertDoubleEquals(0.105*2, A.get(3, 0));
+        assertEquals(0.17*2, A.get(0, 0), epsilon);
+        assertEquals(0.16*2, A.get(1, 0), epsilon);
+        assertEquals(0.29*2, A.get(2, 0), epsilon);
+        assertEquals(0.105*2, A.get(3, 0), epsilon);
 
         // back prop
         SimpleMatrix dCdA = new SimpleMatrix(4, 1, true, new double[] { 0, 1, -1, 0.5 });
@@ -187,26 +187,26 @@ public class LayerTests {
         assertEquals(2, A.numCols());
 
         // test x1
-        assertDoubleEquals(0.17, Z.get(0, 0));
-        assertDoubleEquals(0.16, Z.get(1, 0));
-        assertDoubleEquals(0.29, Z.get(2, 0));
-        assertDoubleEquals(0.105, Z.get(3, 0));
+        assertEquals(0.17, Z.get(0, 0), epsilon);
+        assertEquals(0.16, Z.get(1, 0), epsilon);
+        assertEquals(0.29, Z.get(2, 0), epsilon);
+        assertEquals(0.105, Z.get(3, 0), epsilon);
 
-        assertDoubleEquals(0.17*2, A.get(0, 0));
-        assertDoubleEquals(0.16*2, A.get(1, 0));
-        assertDoubleEquals(0.29*2, A.get(2, 0));
-        assertDoubleEquals(0.105*2, A.get(3, 0));
+        assertEquals(0.17*2, A.get(0, 0), epsilon);
+        assertEquals(0.16*2, A.get(1, 0), epsilon);
+        assertEquals(0.29*2, A.get(2, 0), epsilon);
+        assertEquals(0.105*2, A.get(3, 0), epsilon);
 
         // test x2
-        assertDoubleEquals(0.22, Z.get(0, 1));
-        assertDoubleEquals(0.36, Z.get(1, 1));
-        assertDoubleEquals(0.51, Z.get(2, 1));
-        assertDoubleEquals(0.07, Z.get(3, 1));
+        assertEquals(0.22, Z.get(0, 1), epsilon);
+        assertEquals(0.36, Z.get(1, 1), epsilon);
+        assertEquals(0.51, Z.get(2, 1), epsilon);
+        assertEquals(0.07, Z.get(3, 1), epsilon);
 
-        assertDoubleEquals(0.22*2, A.get(0, 1));
-        assertDoubleEquals(0.36*2, A.get(1, 1));
-        assertDoubleEquals(0.51*2, A.get(2, 1));
-        assertDoubleEquals(0.07*2, A.get(3, 1));
+        assertEquals(0.22*2, A.get(0, 1), epsilon);
+        assertEquals(0.36*2, A.get(1, 1), epsilon);
+        assertEquals(0.51*2, A.get(2, 1), epsilon);
+        assertEquals(0.07*2, A.get(3, 1), epsilon);
 
         // back prop
         // the second input has no error, so the adjustments should be half of the first problem

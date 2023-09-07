@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DoubleEquals {
 
-    @Deprecated
-    public static void assertDoubleEquals(double expected, double actual) {
+    private static void assertDoubleEquals(double expected, double actual) {
         double epsilon = 0.0000001;
         assertTrue(actual >= expected - epsilon);
         assertTrue(actual <= expected + epsilon);
