@@ -58,7 +58,7 @@ public class Layer {
                 w.putScalar(r, c, rand.nextDouble()-0.5);
             }
         }
-        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
+        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1); // <--- TODO: should probably be a vector
     }
 
     public INDArray getWeights() { return w; }
@@ -144,7 +144,7 @@ public class Layer {
             }
             dCdb.putScalar(r, 0, dbVal / m);
         }
-
+        //dCdb = dCdZ.sum(1).divi(m);
 
         return new Pair<>(dCdW, dCdb);
     }

@@ -11,7 +11,7 @@ public class Softmax {
 
     public INDArray fn(INDArray Z) {
 
-        INDArray A = Nd4j.zeros(DataType.DOUBLE, Z.rows(), Z.columns());
+        INDArray A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
 
         double[] sum = new double[Z.columns()];
         for (int r=0;r<Z.rows();r++) {
