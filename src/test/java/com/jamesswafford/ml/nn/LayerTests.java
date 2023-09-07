@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
-import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -145,28 +144,29 @@ public class LayerTests {
             -.2         -.6          .4
              .1          .3         -.2
          */
-        assertDoubleEquals(new double[]{ 0, 0,  0,
+        assertArrayEquals(new double[]{ 0, 0,  0,
                                         .2,.6,-.4,
                                        -.2,-.6,.4,
-                                        .1,.3,-.2},dCdW.getDDRM().getData());
+                                        .1,.3,-.2},dCdW.getDDRM().getData(), epsilon);
 
         // the delta to the bias is dC/dZ
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
-        assertDoubleEquals(new double[]{0,2,-2,1}, dCdb.getDDRM().getData());
+        assertArrayEquals(new double[]{0,2,-2,1}, dCdb.getDDRM().getData(), epsilon);
 
         // update weights and biases
         layer.updateWeightsAndBias(0.5);
-        assertDoubleEquals(new double[]{
+        assertArrayEquals(new double[]{
                 .5-0*.5 ,.3-0*.5, .1-0*.5,
                 .9-.2*.5,.5-.6*.5,.65+.4*.5,
                 1.2+.2*.5,.2+.6*.5,-.3-.4*.5,
-                .15-.1*.5,.4-.3*.5,.4+.2*.5}, MatrixUtil.transform(layer.getWeights()).getDDRM().getData()); // TODO
-        assertDoubleEquals(new double[]{
+                .15-.1*.5,.4-.3*.5,.4+.2*.5}, MatrixUtil.transform(layer.getWeights()).getDDRM().getData(), epsilon);
+
+        assertArrayEquals(new double[]{
                 .05-0*.5,
                 .05-2*.5,
                 .05+2*.5,
-                .05-1*.5}, MatrixUtil.transform(layer.getBiases()).getDDRM().getData()); // TODO
+                .05-1*.5}, MatrixUtil.transform(layer.getBiases()).getDDRM().getData(), epsilon);
     }
 
     @Test
@@ -218,24 +218,25 @@ public class LayerTests {
 
         assertEquals(4, dCdW.numRows());
         assertEquals(3, dCdW.numCols());
-        assertDoubleEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},dCdW.getDDRM().getData());
+        assertArrayEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},dCdW.getDDRM().getData(), epsilon);
 
         assertEquals(4, dCdb.numRows());
         assertEquals(1, dCdb.numCols());
-        assertDoubleEquals(new double[]{0,1,-1,0.5}, dCdb.getDDRM().getData());
+        assertArrayEquals(new double[]{0,1,-1,0.5}, dCdb.getDDRM().getData(), epsilon);
 
         // update weights and biases
         layer.updateWeightsAndBias(0.1);
-        assertDoubleEquals(new double[]{
+        assertArrayEquals(new double[]{
                 .5-0*.1 ,.3-0*.1, .1-0*.1,
                 .9-.1*.1,.5-.3*.1,.65+.2*.1,
                 1.2+.1*.1,.2+.3*.1,-.3-.2*.1,
-                .15-.05*.1,.4-.15*.1,.4+.1*.1}, MatrixUtil.transform(layer.getWeights()).getDDRM().getData()); // TODO
-        assertDoubleEquals(new double[]{
+                .15-.05*.1,.4-.15*.1,.4+.1*.1}, MatrixUtil.transform(layer.getWeights()).getDDRM().getData(), epsilon);
+
+        assertArrayEquals(new double[]{
                 .05-0*.1,
                 .05-1*.1,
                 .05+1*.1,
-                .05-.5*.1}, MatrixUtil.transform(layer.getBiases()).getDDRM().getData()); // TODO
+                .05-.5*.1}, MatrixUtil.transform(layer.getBiases()).getDDRM().getData(), epsilon);
     }
 
     @Test
@@ -249,15 +250,17 @@ public class LayerTests {
         assertEquals(3, state.getWeights()[0].length);
         assertArrayEquals(new double[][] {{.5,.3,.1},{.9,.5,.65},{1.2,.2,-.3},{.15,.4,.4}}, state.getWeights());
         assertEquals(4, state.getBiases().length);
-        assertDoubleEquals(new double[] {.05,.05,.05,.05}, state.getBiases());
+        assertArrayEquals(new double[] {.05,.05,.05,.05}, state.getBiases(), epsilon);
 
         Layer layer2 = Layer.fromState(state);
         assertEquals(4, layer2.getNumUnits());
         assertEquals(Tanh.INSTANCE, layer.getActivationFunction());
         assertEquals(12, MatrixUtil.transform(layer2.getWeights()).getNumElements()); // TODO
-        assertDoubleEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4}, MatrixUtil.transform(layer2.getWeights()).getDDRM().getData()); // TODO
+        assertArrayEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4},
+                MatrixUtil.transform(layer2.getWeights()).getDDRM().getData(), epsilon);
         assertEquals(4, MatrixUtil.transform(layer2.getBiases()).getNumElements()); // TODO
-        assertDoubleEquals(new double[] {.05,.05,.05,.05}, MatrixUtil.transform(layer2.getBiases()).getDDRM().getData()); // TODO
+        assertArrayEquals(new double[] {.05,.05,.05,.05},
+                MatrixUtil.transform(layer2.getBiases()).getDDRM().getData(), epsilon);
     }
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {

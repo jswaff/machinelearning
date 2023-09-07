@@ -3,9 +3,11 @@ package com.jamesswafford.ml.nn.activation;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.jupiter.api.Test;
 
-import static com.jamesswafford.ml.nn.testutil.DoubleEquals.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SoftmaxTests {
+
+    private static final double epsilon = 0.00001;
 
     private final Softmax softmax = new Softmax();
 
@@ -16,7 +18,7 @@ public class SoftmaxTests {
         SimpleMatrix Z = new SimpleMatrix(3, 1, true, new double[] { 2.0, 1.0, 0.1 });
         SimpleMatrix A = softmax.fn(Z);
 
-        assertDoubleEquals(new double[] { .659001139, .242432971, .09856589 }, A.getDDRM().getData());
+        assertArrayEquals(new double[] { .659001139, .242432971, .09856589 }, A.getDDRM().getData(), epsilon);
 
         // test vectorization
         Z = new SimpleMatrix(3, 3, true,
@@ -26,10 +28,10 @@ public class SoftmaxTests {
         A = softmax.fn(Z);
         A.print();
 
-        assertDoubleEquals(
+        assertArrayEquals(
                 new double[] { .659001139, .09856589, 0.422318798,
                                .242432971, .242432971, 0.422318798,
-                               .09856589,  .659001139, 0.155362403 }, A.getDDRM().getData());
+                               .09856589,  .659001139, 0.155362403 }, A.getDDRM().getData(), epsilon);
 
     }
 
@@ -40,7 +42,7 @@ public class SoftmaxTests {
         SimpleMatrix Z = new SimpleMatrix(4, 1, true, new double[] { 1.1, 2.2, 0.2, -1.7 });
         SimpleMatrix A = softmax.fn(Z);
 
-        assertDoubleEquals(new double[] { .223636312,  .67184061, .090923739, .013599338}, A.getDDRM().getData());
+        assertArrayEquals(new double[] { .223636312,  .67184061, .090923739, .013599338}, A.getDDRM().getData(), epsilon);
     }
 
     // TODO: test cases for derivative (should yield matrix m x m)
