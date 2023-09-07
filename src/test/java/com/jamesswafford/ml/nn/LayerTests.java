@@ -4,11 +4,11 @@ import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import com.jamesswafford.ml.nn.activation.Tanh;
 import com.jamesswafford.ml.nn.util.MatrixUtil;
-import org.ejml.simple.SimpleMatrix;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -61,15 +61,13 @@ public class LayerTests {
         layer.setWeight(0, 0, 0.1D);
         layer.setBias(0, 0.05D);
 
-        SimpleMatrix X = new SimpleMatrix(1, 1);
-        X.set(0, 0, 0.5D);
+        INDArray X = Nd4j.create(new double[] { 0.5 }, new int[] {1,1});
+        Pair<INDArray, INDArray> Z_A = layer.feedForward(X);
+        INDArray Z = Z_A.getValue0();
 
-        Pair<INDArray, INDArray> Z_A = layer.feedForward(MatrixUtil.transform(X)); // TODO
-        SimpleMatrix Z = MatrixUtil.transform(Z_A.getValue0()); // TODO
-
-        assertEquals(1, Z.numRows());
-        assertEquals(1, Z.numCols());
-        assertEquals(0.1, Z.get(0, 0), 0.00001);
+        assertEquals(1, Z.rows());
+        assertEquals(1, Z.columns());
+        assertEquals(0.1, Z.getDouble(0, 0), 0.00001);
 
         verify(activationFunction, times(1)).func(0.1);
     }
@@ -86,16 +84,15 @@ public class LayerTests {
         layer.setWeight(2, 0, 0.3);
         layer.setBias(2, 0.05);
 
-        SimpleMatrix X = new SimpleMatrix(1, 1);
-        X.set(0, 0, 2.0);
-        Pair<INDArray, INDArray> Z_A = layer.feedForward(MatrixUtil.transform(X)); // TODO
-        SimpleMatrix Z = MatrixUtil.transform(Z_A.getValue0()); // TODO
+        INDArray X = Nd4j.create(new double[] { 2.0 }, new int[] {1,1});
+        Pair<INDArray, INDArray> Z_A = layer.feedForward(X);
+        INDArray Z = Z_A.getValue0();
 
-        assertEquals(3, Z.numRows());
-        assertEquals(1, Z.numCols());
-        assertEquals(0.25, Z.get(0, 0));
-        assertEquals(0.45, Z.get(1, 0), 0.00001);
-        assertEquals(0.65, Z.get(2, 0), 0.00001);
+        assertEquals(3, Z.rows());
+        assertEquals(1, Z.columns());
+        assertEquals(0.25, Z.getDouble(0, 0));
+        assertEquals(0.45, Z.getDouble(1, 0), 0.00001);
+        assertEquals(0.65, Z.getDouble(2, 0), 0.00001);
 
         verify(activationFunction, times(1)).func(0.25);
         verify(activationFunction, times(1)).func(0.45);
@@ -107,52 +104,49 @@ public class LayerTests {
         Layer layer = build3x4Layer(aFunc);
 
         // input a column vector (one row per unit from previous layer)
-        SimpleMatrix X = new SimpleMatrix(3, 1, true, new double[]{.1,.3,-.2});
-
-        Pair<INDArray, INDArray> Z_A = layer.feedForward(MatrixUtil.transform(X)); // TODO
-        SimpleMatrix Z = MatrixUtil.transform(Z_A.getValue0()); // TODO
-        SimpleMatrix A = MatrixUtil.transform(Z_A.getValue1()); // TODO
+        INDArray X = Nd4j.create(new double[]{.1,.3,-.2}, new int[]{3,1});
+        Pair<INDArray, INDArray> Z_A = layer.feedForward(X);
+        INDArray Z = Z_A.getValue0();
+        INDArray A = Z_A.getValue1();
 
         // the output should be a column vector with one row per unit in this layer
-        assertEquals(4, Z.numRows());
-        assertEquals(1, Z.numCols());
-        assertEquals(4, A.numRows());
-        assertEquals(1, A.numCols());
+        assertEquals(4, Z.rows());
+        assertEquals(1, Z.columns());
+        assertEquals(4, A.rows());
+        assertEquals(1, A.columns());
 
-        assertEquals(0.17, Z.get(0, 0), epsilon);
-        assertEquals(0.16, Z.get(1, 0), epsilon);
-        assertEquals(0.29, Z.get(2, 0), epsilon);
-        assertEquals(0.105, Z.get(3, 0), epsilon);
+        assertEquals(0.17, Z.getDouble(0, 0), epsilon);
+        assertEquals(0.16, Z.getDouble(1, 0), epsilon);
+        assertEquals(0.29, Z.getDouble(2, 0), epsilon);
+        assertEquals(0.105, Z.getDouble(3, 0), epsilon);
 
-        assertEquals(0.17*2, A.get(0, 0), epsilon);
-        assertEquals(0.16*2, A.get(1, 0), epsilon);
-        assertEquals(0.29*2, A.get(2, 0), epsilon);
-        assertEquals(0.105*2, A.get(3, 0), epsilon);
+        assertEquals(0.17*2, A.getDouble(0, 0), epsilon);
+        assertEquals(0.16*2, A.getDouble(1, 0), epsilon);
+        assertEquals(0.29*2, A.getDouble(2, 0), epsilon);
+        assertEquals(0.105*2, A.getDouble(3, 0), epsilon);
 
         // back prop
-        SimpleMatrix dCdA = new SimpleMatrix(4, 1, true, new double[] { 0, 1, -1, 0.5 });
-        Pair<INDArray, INDArray> dCdW_dCdb = layer.calculateGradients(MatrixUtil.transform(dCdA)); // TODO
-        SimpleMatrix dCdW = MatrixUtil.transform(dCdW_dCdb.getValue0()); // TODO
-        SimpleMatrix dCdb = MatrixUtil.transform(dCdW_dCdb.getValue1()); // TODO
+        INDArray dCdA = Nd4j.create(new double[]{0,1,-1,0.5}, new int[]{4,1});
+        Pair<INDArray, INDArray> dCdW_dCdb = layer.calculateGradients(dCdA);
+        INDArray dCdW = dCdW_dCdb.getValue0();
+        INDArray dCdb = dCdW_dCdb.getValue1();
 
         // the delta weights should be the same shape as the weights matrix
-        assertEquals(4, dCdW.numRows());
-        assertEquals(3, dCdW.numCols());
+        assertEquals(4, dCdW.rows());
+        assertEquals(3, dCdW.columns());
         /*
               0           0           0
              .2          .6         -.4
             -.2         -.6          .4
              .1          .3         -.2
          */
-        assertArrayEquals(new double[]{ 0, 0,  0,
-                                        .2,.6,-.4,
-                                       -.2,-.6,.4,
-                                        .1,.3,-.2},dCdW.getDDRM().getData(), epsilon);
+        assertArrayEquals(new double[]{0,0,0,.2,.6,-.4,-.2,-.6,.4,.1,.3,-.2},
+                MatrixUtil.flatten(dCdW.toDoubleMatrix(), 4, 3), epsilon);
 
         // the delta to the bias is dC/dZ
-        assertEquals(4, dCdb.numRows());
-        assertEquals(1, dCdb.numCols());
-        assertArrayEquals(new double[]{0,2,-2,1}, dCdb.getDDRM().getData(), epsilon);
+        assertEquals(4, dCdb.rows());
+        assertEquals(1, dCdb.columns());
+        assertArrayEquals(new double[]{0,2,-2,1}, dCdb.toDoubleVector(), epsilon);
 
         // update weights and biases
         layer.updateWeightsAndBias(0.5);
@@ -160,69 +154,68 @@ public class LayerTests {
                 .5-0*.5 ,.3-0*.5, .1-0*.5,
                 .9-.2*.5,.5-.6*.5,.65+.4*.5,
                 1.2+.2*.5,.2+.6*.5,-.3-.4*.5,
-                .15-.1*.5,.4-.3*.5,.4+.2*.5}, MatrixUtil.transform(layer.getWeights()).getDDRM().getData(), epsilon);
+                .15-.1*.5,.4-.3*.5,.4+.2*.5},
+                MatrixUtil.flatten(layer.getWeights().toDoubleMatrix(), 4, 3), epsilon);
 
         assertArrayEquals(new double[]{
                 .05-0*.5,
                 .05-2*.5,
                 .05+2*.5,
-                .05-1*.5}, MatrixUtil.transform(layer.getBiases()).getDDRM().getData(), epsilon);
+                .05-1*.5}, layer.getBiases().toDoubleVector(), epsilon);
     }
 
     @Test
     void forwardAndBack_3x4_batch() {
         Layer layer = build3x4Layer(aFunc);
 
-        SimpleMatrix X = new SimpleMatrix(3, 2, false,
-                new double[]{.1,.3,-.2,.4,-.1,0});
+        INDArray X = Nd4j.create(new double[]{.1,.4,.3,-.1,-.2,0}, new int[]{3,2});
 
-        Pair<INDArray, INDArray> Z_A = layer.feedForward(MatrixUtil.transform(X)); // TODO
-        SimpleMatrix Z = MatrixUtil.transform(Z_A.getValue0()); // TODO
-        SimpleMatrix A = MatrixUtil.transform(Z_A.getValue1()); // TODO
+        Pair<INDArray, INDArray> Z_A = layer.feedForward(X);
+        INDArray Z = Z_A.getValue0();
+        INDArray A = Z_A.getValue1();
 
         // the output should have one row per unit and one column per input
-        assertEquals(4, Z.numRows());
-        assertEquals(2, Z.numCols());
-        assertEquals(4, A.numRows());
-        assertEquals(2, A.numCols());
+        assertEquals(4, Z.rows());
+        assertEquals(2, Z.columns());
+        assertEquals(4, A.rows());
+        assertEquals(2, A.columns());
 
         // test x1
-        assertEquals(0.17, Z.get(0, 0), epsilon);
-        assertEquals(0.16, Z.get(1, 0), epsilon);
-        assertEquals(0.29, Z.get(2, 0), epsilon);
-        assertEquals(0.105, Z.get(3, 0), epsilon);
+        assertEquals(0.17, Z.getDouble(0, 0), epsilon);
+        assertEquals(0.16, Z.getDouble(1, 0), epsilon);
+        assertEquals(0.29, Z.getDouble(2, 0), epsilon);
+        assertEquals(0.105, Z.getDouble(3, 0), epsilon);
 
-        assertEquals(0.17*2, A.get(0, 0), epsilon);
-        assertEquals(0.16*2, A.get(1, 0), epsilon);
-        assertEquals(0.29*2, A.get(2, 0), epsilon);
-        assertEquals(0.105*2, A.get(3, 0), epsilon);
+        assertEquals(0.17*2, A.getDouble(0, 0), epsilon);
+        assertEquals(0.16*2, A.getDouble(1, 0), epsilon);
+        assertEquals(0.29*2, A.getDouble(2, 0), epsilon);
+        assertEquals(0.105*2, A.getDouble(3, 0), epsilon);
 
         // test x2
-        assertEquals(0.22, Z.get(0, 1), epsilon);
-        assertEquals(0.36, Z.get(1, 1), epsilon);
-        assertEquals(0.51, Z.get(2, 1), epsilon);
-        assertEquals(0.07, Z.get(3, 1), epsilon);
+        assertEquals(0.22, Z.getDouble(0, 1), epsilon);
+        assertEquals(0.36, Z.getDouble(1, 1), epsilon);
+        assertEquals(0.51, Z.getDouble(2, 1), epsilon);
+        assertEquals(0.07, Z.getDouble(3, 1), epsilon);
 
-        assertEquals(0.22*2, A.get(0, 1), epsilon);
-        assertEquals(0.36*2, A.get(1, 1), epsilon);
-        assertEquals(0.51*2, A.get(2, 1), epsilon);
-        assertEquals(0.07*2, A.get(3, 1), epsilon);
+        assertEquals(0.22*2, A.getDouble(0, 1), epsilon);
+        assertEquals(0.36*2, A.getDouble(1, 1), epsilon);
+        assertEquals(0.51*2, A.getDouble(2, 1), epsilon);
+        assertEquals(0.07*2, A.getDouble(3, 1), epsilon);
 
         // back prop
         // the second input has no error, so the adjustments should be half of the first problem
-        SimpleMatrix dCdA = new SimpleMatrix(4, 2, false,
-                new double[] { 0, 1, -1, 0.5, 0, 0, 0, 0 }); // no error second input
-        Pair<INDArray, INDArray> dCdW_dCdb = layer.calculateGradients(MatrixUtil.transform(dCdA)); // TODO
-        SimpleMatrix dCdW = MatrixUtil.transform(dCdW_dCdb.getValue0()); // TODO
-        SimpleMatrix dCdb = MatrixUtil.transform(dCdW_dCdb.getValue1()); // TODO
+        INDArray dCdA = Nd4j.create(new double[]{0,0,1,0,-1,0,0.5,0}, new int[]{4,2});
+        Pair<INDArray, INDArray> dCdW_dCdb = layer.calculateGradients(dCdA);
+        INDArray dCdW = dCdW_dCdb.getValue0();
+        INDArray dCdb = dCdW_dCdb.getValue1();
 
-        assertEquals(4, dCdW.numRows());
-        assertEquals(3, dCdW.numCols());
-        assertArrayEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},dCdW.getDDRM().getData(), epsilon);
+        assertEquals(4, dCdW.rows());
+        assertEquals(3, dCdW.columns());
+        assertArrayEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},MatrixUtil.flatten(dCdW.toDoubleMatrix(),4,3), epsilon);
 
-        assertEquals(4, dCdb.numRows());
-        assertEquals(1, dCdb.numCols());
-        assertArrayEquals(new double[]{0,1,-1,0.5}, dCdb.getDDRM().getData(), epsilon);
+        assertEquals(4, dCdb.rows());
+        assertEquals(1, dCdb.columns());
+        assertArrayEquals(new double[]{0,1,-1,0.5}, dCdb.toDoubleVector(), epsilon);
 
         // update weights and biases
         layer.updateWeightsAndBias(0.1);
@@ -230,13 +223,13 @@ public class LayerTests {
                 .5-0*.1 ,.3-0*.1, .1-0*.1,
                 .9-.1*.1,.5-.3*.1,.65+.2*.1,
                 1.2+.1*.1,.2+.3*.1,-.3-.2*.1,
-                .15-.05*.1,.4-.15*.1,.4+.1*.1}, MatrixUtil.transform(layer.getWeights()).getDDRM().getData(), epsilon);
+                .15-.05*.1,.4-.15*.1,.4+.1*.1}, MatrixUtil.flatten(layer.getWeights().toDoubleMatrix(),4,3), epsilon);
 
         assertArrayEquals(new double[]{
                 .05-0*.1,
                 .05-1*.1,
                 .05+1*.1,
-                .05-.5*.1}, MatrixUtil.transform(layer.getBiases()).getDDRM().getData(), epsilon);
+                .05-.5*.1}, layer.getBiases().toDoubleVector(), epsilon);
     }
 
     @Test
@@ -255,12 +248,9 @@ public class LayerTests {
         Layer layer2 = Layer.fromState(state);
         assertEquals(4, layer2.getNumUnits());
         assertEquals(Tanh.INSTANCE, layer.getActivationFunction());
-        assertEquals(12, MatrixUtil.transform(layer2.getWeights()).getNumElements()); // TODO
         assertArrayEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4},
-                MatrixUtil.transform(layer2.getWeights()).getDDRM().getData(), epsilon);
-        assertEquals(4, MatrixUtil.transform(layer2.getBiases()).getNumElements()); // TODO
-        assertArrayEquals(new double[] {.05,.05,.05,.05},
-                MatrixUtil.transform(layer2.getBiases()).getDDRM().getData(), epsilon);
+                MatrixUtil.flatten(layer2.getWeights().toDoubleMatrix(),4,3), epsilon);
+        assertArrayEquals(new double[] {.05,.05,.05,.05}, layer2.getBiases().toDoubleVector(), epsilon);
     }
 
     private Layer build3x4Layer(ActivationFunction activationFunction) {

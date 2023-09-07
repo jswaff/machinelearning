@@ -1,31 +1,11 @@
 package com.jamesswafford.ml.nn.util;
 
-import org.ejml.simple.SimpleMatrix;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class MatrixUtil {
-
-    public static INDArray transform(SimpleMatrix matrix) {
-        return Nd4j.create(matrix.getDDRM().data,
-                new int[] { matrix.getDDRM().numRows, matrix.getDDRM().numCols });
-    }
-
-    public static SimpleMatrix transform(INDArray matrix) {
-        double[] d;
-        if (matrix.isVector()) {
-            d = matrix.toDoubleVector();
-        } else {
-            double[][] m = matrix.toDoubleMatrix();
-            d = flatten(m, matrix.rows(), matrix.columns());
-        }
-        return new SimpleMatrix(matrix.rows(), matrix.columns(), true, d);
-    }
 
     public static double[] flatten(double[][] matrix, int rows, int cols) {
         Double[][] m = new Double[rows][cols];

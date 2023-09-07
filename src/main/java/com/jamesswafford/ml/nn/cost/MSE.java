@@ -1,7 +1,5 @@
 package com.jamesswafford.ml.nn.cost;
 
-import com.jamesswafford.ml.nn.util.MatrixUtil;
-import org.ejml.simple.SimpleMatrix;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
@@ -27,12 +25,6 @@ public class MSE implements CostFunction {
      * @param labels  l x m matrix
      * @return the cost over all training examples.
      */
-    @Override
-    @Deprecated
-    public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
-        return cost(MatrixUtil.transform(predictions), MatrixUtil.transform(labels));
-    }
-
     @Override
     public double cost(INDArray predictions, INDArray labels) {
         if (!Arrays.equals(predictions.shape(), labels.shape())) {
