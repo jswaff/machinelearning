@@ -1,5 +1,8 @@
 package com.jamesswafford.ml.nn.activation;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
+
 public class Tanh implements ActivationFunction {
 
     public static Tanh INSTANCE = new Tanh();
@@ -18,8 +21,18 @@ public class Tanh implements ActivationFunction {
     }
 
     @Override
+    public INDArray func(INDArray z) {
+        return Transforms.hardTanh(z);
+    }
+
+    @Override
     public double derivativeFunc(double a) {
         double x = Math.tanh(a);
         return 1 - (x * x);
+    }
+
+    @Override
+    public INDArray derivativeFunc(INDArray a) {
+        return Transforms.hardTanhDerivative(a);
     }
 }

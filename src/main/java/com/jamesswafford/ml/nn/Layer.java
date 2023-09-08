@@ -96,15 +96,7 @@ public class Layer {
         this.X = X;
 
         Z = w.mmul(X).addi(b);
-
-        // TODO: is there a better way to map the activation function?  Look into Transform Op
-        //INDArray A = Transforms.sigmoid(Z, true);
-        A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
-        for (int r=0;r<Z.rows();r++) {
-            for (int c=0;c<Z.columns();c++) {
-                A.putScalar(r, c, activationFunction.func(Z.getDouble(r, c)));
-            }
-        }
+        A = activationFunction.func(Z);
 
         return new Pair<>(Z, A);
     }
@@ -160,7 +152,7 @@ public class Layer {
     }
 
     private INDArray calculateZPrime() {
-        INDArray Z_prime = Nd4j.create(Z.rows(), Z.columns());
+        /*INDArray Z_prime = Nd4j.create(Z.rows(), Z.columns());
 
         // TODO: is there a faster way to map the activation function?  Look at Transform Ops
         for (int r=0;r<Z_prime.rows();r++) {
@@ -168,7 +160,9 @@ public class Layer {
                 Z_prime.putScalar(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
             }
         }
-        return Z_prime;
+        return Z_prime;*/
+
+        return activationFunction.derivativeFunc(Z);
     }
 
     public LayerState getState() {

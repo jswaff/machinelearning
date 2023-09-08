@@ -1,5 +1,8 @@
 package com.jamesswafford.ml.nn.activation;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
 public class Identity implements ActivationFunction {
 
     public static Identity INSTANCE = new Identity();
@@ -18,7 +21,17 @@ public class Identity implements ActivationFunction {
     }
 
     @Override
+    public INDArray func(INDArray z) {
+        return z;
+    }
+
+    @Override
     public double derivativeFunc(double a) {
         return 1.0;
+    }
+
+    @Override
+    public INDArray derivativeFunc(INDArray a) {
+        return Nd4j.ones(a.dataType(), a.rows(), a.columns());
     }
 }
