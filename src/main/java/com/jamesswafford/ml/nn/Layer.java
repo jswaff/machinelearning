@@ -10,8 +10,6 @@ import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.Random;
-
 @RequiredArgsConstructor
 public class Layer {
 
@@ -48,14 +46,8 @@ public class Layer {
     }
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
-        Random rand = new Random(seed);
-        w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
-        // TODO: initialize with rand() and then .subi(0.5)
-        for (int r=0;r<numUnits;r++) {
-            for (int c=0;c<numUnitsPreviousLayer;c++) {
-                w.putScalar(r, c, rand.nextDouble()-0.5);
-            }
-        }
+        Nd4j.getRandom().setSeed(seed);
+        w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
         b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
     }
 
