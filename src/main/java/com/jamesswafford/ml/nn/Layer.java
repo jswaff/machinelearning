@@ -10,6 +10,8 @@ import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.util.Random;
+
 @RequiredArgsConstructor
 public class Layer {
 
@@ -46,8 +48,16 @@ public class Layer {
     }
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
-        Nd4j.getRandom().setSeed(seed);
-        w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
+//        Nd4j.getRandom().setSeed(seed);
+//        w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
+//        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
+        Random rand = new Random(seed);
+        w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
+        for (int r=0;r<numUnits;r++) {
+            for (int c=0;c<numUnitsPreviousLayer;c++) {
+                w.putScalar(r, c, rand.nextDouble()-0.5);
+            }
+        }
         b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
     }
 
@@ -86,7 +96,13 @@ public class Layer {
         this.X = X;
 
         Z = w.mmul(X).addi(b);
-        A = activationFunction.func(Z, true);
+        //A = activationFunction.func(Z, true);
+        A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
+        for (int r=0;r<Z.rows();r++) {
+            for (int c=0;c<Z.columns();c++) {
+                A.putScalar(r, c, activationFunction.func(Z.getDouble(r, c)));
+            }
+        }
 
         return new Pair<>(Z, A);
     }
@@ -112,12 +128,27 @@ public class Layer {
         int m = X.columns();
 
         // adjust the weights
-        INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
+        //INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
+        INDArray dAdZ = Nd4j.create(Z.rows(), Z.columns());
+        for (int r=0;r<Z.rows();r++) {
+            for (int c=0;c<Z.columns();c++) {
+                dAdZ.putScalar(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
+            }
+        }
+
         dCdZ = dCdA.mul(dAdZ);
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
-        dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
+        //dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
+        dCdb = Nd4j.create(b.rows(), 1);
+        for (int r=0;r<b.rows();r++) {
+            double dbVal = 0.0;
+            for (int c=0;c<dCdZ.columns();c++) {
+                dbVal += dCdZ.getDouble(r, c);
+            }
+            dCdb.putScalar(r, 0, dbVal / m);
+        }
 
         return new Pair<>(dCdW, dCdb);
     }
