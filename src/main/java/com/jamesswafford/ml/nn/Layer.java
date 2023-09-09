@@ -94,7 +94,7 @@ public class Layer {
         this.X = X;
 
         Z = w.mmul(X).addi(b);
-        A = activationFunction.func(Z);
+        A = activationFunction.func(Z, true);
 
         return new Pair<>(Z, A); // TODO: just return A
     }
@@ -120,7 +120,7 @@ public class Layer {
         int m = X.columns();
 
         // adjust the weights
-        INDArray dAdZ = activationFunction.derivativeFunc(Z); // TODO: might get away with not copying here.
+        INDArray dAdZ = activationFunction.derivativeFunc(Z, false);
         dCdZ = dCdA.mul(dAdZ); // don't copy?
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 

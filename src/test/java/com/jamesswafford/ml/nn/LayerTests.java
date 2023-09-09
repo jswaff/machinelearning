@@ -29,7 +29,7 @@ public class LayerTests {
         }
 
         @Override
-        public INDArray func(INDArray z) {
+        public INDArray func(INDArray z, boolean copy) {
             return z.mul(2);
         }
 
@@ -39,7 +39,7 @@ public class LayerTests {
         }
 
         @Override
-        public INDArray derivativeFunc(INDArray a) {
+        public INDArray derivativeFunc(INDArray a, boolean copy) {
             return Nd4j.ones(a.dataType(), a.rows(), a.columns()).muli(2);
         }
     };
@@ -79,8 +79,7 @@ public class LayerTests {
         assertEquals(1, Z.columns());
         assertEquals(0.1, Z.getDouble(0, 0), 0.00001);
 
-        // FIXME
-//        verify(activationFunction, times(1)).func(0.1);
+        verify(activationFunction, times(1)).func(Nd4j.create(new double[]{0.1}, new int[]{1,1}), true);
     }
 
     @Test
@@ -105,10 +104,7 @@ public class LayerTests {
         assertEquals(0.45, Z.getDouble(1, 0), 0.00001);
         assertEquals(0.65, Z.getDouble(2, 0), 0.00001);
 
-        // FIXME
-//        verify(activationFunction, times(1)).func(0.25);
-//        verify(activationFunction, times(1)).func(0.45);
-//        verify(activationFunction, times(1)).func(0.65);
+        verify(activationFunction, times(1)).func(Nd4j.create(new double[]{0.25,0.45,0.65}, new int[]{3,1}), true);
     }
 
     @Test

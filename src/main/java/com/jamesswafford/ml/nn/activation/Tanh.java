@@ -21,8 +21,8 @@ public class Tanh implements ActivationFunction {
     }
 
     @Override
-    public INDArray func(INDArray z) {
-        return Transforms.hardTanh(z);
+    public INDArray func(INDArray z, boolean copy) {
+        return Transforms.hardTanh(z, copy);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class Tanh implements ActivationFunction {
     }
 
     @Override
-    public INDArray derivativeFunc(INDArray a) {
-        return Transforms.hardTanhDerivative(a, false);
+    public INDArray derivativeFunc(INDArray a, boolean copy) {
+        return Transforms.hardTanhDerivative(a, copy);
     }
 }

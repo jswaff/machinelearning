@@ -21,8 +21,8 @@ public class Relu implements ActivationFunction {
     }
 
     @Override
-    public INDArray func(INDArray z) {
-        return Transforms.leakyRelu(z, 0.01);
+    public INDArray func(INDArray z, boolean copy) {
+        return Transforms.leakyRelu(z, 0.01, copy);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class Relu implements ActivationFunction {
     }
 
     @Override
-    public INDArray derivativeFunc(INDArray a) {
-        return Transforms.leakyReluDerivative(a, 0.01, false);
+    public INDArray derivativeFunc(INDArray a, boolean copy) {
+        return Transforms.leakyReluDerivative(a, 0.01, copy);
     }
 }

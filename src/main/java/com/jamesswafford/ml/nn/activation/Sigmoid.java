@@ -21,8 +21,8 @@ public class Sigmoid implements ActivationFunction {
     }
 
     @Override
-    public INDArray func(INDArray z) {
-        return Transforms.sigmoid(z);
+    public INDArray func(INDArray z, boolean copy) {
+        return Transforms.sigmoid(z, copy);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class Sigmoid implements ActivationFunction {
     }
 
     @Override
-    public INDArray derivativeFunc(INDArray a) {
-        return Transforms.sigmoidDerivative(a,  false);
+    public INDArray derivativeFunc(INDArray a, boolean copy) {
+        return Transforms.sigmoidDerivative(a,  copy);
     }
 }

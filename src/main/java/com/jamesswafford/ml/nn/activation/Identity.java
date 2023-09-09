@@ -21,8 +21,8 @@ public class Identity implements ActivationFunction {
     }
 
     @Override
-    public INDArray func(INDArray z) {
-        return z;
+    public INDArray func(INDArray z, boolean copy) {
+        return copy ? z.dup() : z;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class Identity implements ActivationFunction {
     }
 
     @Override
-    public INDArray derivativeFunc(INDArray a) {
+    public INDArray derivativeFunc(INDArray a, boolean copy) {
         return Nd4j.ones(a.dataType(), a.rows(), a.columns());
     }
 }

@@ -219,7 +219,7 @@ public class Network {
             // set dC/dA for the previous layer (l-1)
             if (L > 0) {
                 INDArray dCdZ = layer.getDCdZ();
-                dCdA = layer.getWeights().transpose().mmul(dCdZ); // TODO: maybe in place
+                dCdA = layer.getWeights().transpose().mmul(dCdZ);
             }
         }
 

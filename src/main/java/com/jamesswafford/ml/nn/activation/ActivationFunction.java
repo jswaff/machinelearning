@@ -8,10 +8,10 @@ public interface ActivationFunction {
 
     double func(double z);
 
-    INDArray func(INDArray z);
+    INDArray func(INDArray z, boolean copy);
 
     double derivativeFunc(double a);
 
-    INDArray derivativeFunc(INDArray a);
+    INDArray derivativeFunc(INDArray a, boolean copy);
 
 }
