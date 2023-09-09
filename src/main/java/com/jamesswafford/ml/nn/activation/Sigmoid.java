@@ -33,6 +33,6 @@ public class Sigmoid implements ActivationFunction {
 
     @Override
     public INDArray derivativeFunc(INDArray a) {
-        return Transforms.sigmoidDerivative(a);
+        return Transforms.sigmoidDerivative(a,  false);
     }
 }

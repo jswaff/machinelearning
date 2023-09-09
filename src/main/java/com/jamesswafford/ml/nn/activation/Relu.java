@@ -32,6 +32,6 @@ public class Relu implements ActivationFunction {
 
     @Override
     public INDArray derivativeFunc(INDArray a) {
-        return Transforms.leakyReluDerivative(a, 0.01);
+        return Transforms.leakyReluDerivative(a, 0.01, false);
     }
 }

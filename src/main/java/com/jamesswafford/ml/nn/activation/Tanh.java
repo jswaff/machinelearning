@@ -33,6 +33,6 @@ public class Tanh implements ActivationFunction {
 
     @Override
     public INDArray derivativeFunc(INDArray a) {
-        return Transforms.hardTanhDerivative(a);
+        return Transforms.hardTanhDerivative(a, false);
     }
 }

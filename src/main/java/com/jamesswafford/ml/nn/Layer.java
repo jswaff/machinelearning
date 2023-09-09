@@ -56,7 +56,7 @@ public class Layer {
                 w.putScalar(r, c, rand.nextDouble()-0.5);
             }
         }
-        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1); // <--- TODO: should probably be a vector
+        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
     }
 
     public INDArray getWeights() { return w; }
@@ -96,7 +96,7 @@ public class Layer {
         Z = w.mmul(X).addi(b);
         A = activationFunction.func(Z);
 
-        return new Pair<>(Z, A);
+        return new Pair<>(Z, A); // TODO: just return A
     }
 
     /**
@@ -120,14 +120,14 @@ public class Layer {
         int m = X.columns();
 
         // adjust the weights
-        INDArray dAdZ = activationFunction.derivativeFunc(Z);
-        dCdZ = dCdA.mul(dAdZ);
+        INDArray dAdZ = activationFunction.derivativeFunc(Z); // TODO: might get away with not copying here.
+        dCdZ = dCdA.mul(dAdZ); // don't copy?
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
         dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
 
-        return new Pair<>(dCdW, dCdb);
+        return new Pair<>(dCdW, dCdb); // TODO: don't really need a return
     }
 
     /**
