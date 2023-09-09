@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.javatuples.Pair;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.impl.transforms.strict.Sigmoid;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.Random;
 
@@ -50,15 +48,17 @@ public class Layer {
     }
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
+//        Nd4j.getRandom().setSeed(seed);
+//        w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
+//        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
         Random rand = new Random(seed);
         w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
-        // TODO: initialize with rand() and then .subi(0.5)
         for (int r=0;r<numUnits;r++) {
             for (int c=0;c<numUnitsPreviousLayer;c++) {
                 w.putScalar(r, c, rand.nextDouble()-0.5);
             }
         }
-        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1); // <--- TODO: should probably be a vector
+        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
     }
 
     public INDArray getWeights() { return w; }
@@ -96,9 +96,7 @@ public class Layer {
         this.X = X;
 
         Z = w.mmul(X).addi(b);
-
-        // TODO: is there a better way to map the activation function?  Look into Transform Op
-        //INDArray A = Transforms.sigmoid(Z, true);
+        //A = activationFunction.func(Z, true);
         A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
         for (int r=0;r<Z.rows();r++) {
             for (int c=0;c<Z.columns();c++) {
@@ -130,21 +128,27 @@ public class Layer {
         int m = X.columns();
 
         // adjust the weights
-        INDArray dAdZ = calculateZPrime();
+        //INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
+        INDArray dAdZ = Nd4j.create(Z.rows(), Z.columns());
+        for (int r=0;r<Z.rows();r++) {
+            for (int c=0;c<Z.columns();c++) {
+                dAdZ.putScalar(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
+            }
+        }
+
         dCdZ = dCdA.mul(dAdZ);
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
+        //dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
         dCdb = Nd4j.create(b.rows(), 1);
         for (int r=0;r<b.rows();r++) {
-            // TODO: a faster way to add across the row?
             double dbVal = 0.0;
             for (int c=0;c<dCdZ.columns();c++) {
                 dbVal += dCdZ.getDouble(r, c);
             }
             dCdb.putScalar(r, 0, dbVal / m);
         }
-        //dCdb = dCdZ.sum(1).divi(m);
 
         return new Pair<>(dCdW, dCdb);
     }
@@ -157,18 +161,6 @@ public class Layer {
     public void updateWeightsAndBias(double learningRate) {
         w.subi(dCdW.mul(learningRate));
         b.subi(dCdb.mul(learningRate));
-    }
-
-    private INDArray calculateZPrime() {
-        INDArray Z_prime = Nd4j.create(Z.rows(), Z.columns());
-
-        // TODO: is there a faster way to map the activation function?  Look at Transform Ops
-        for (int r=0;r<Z_prime.rows();r++) {
-            for (int c=0;c<Z_prime.columns();c++) {
-                Z_prime.putScalar(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
-            }
-        }
-        return Z_prime;
     }
 
     public LayerState getState() {

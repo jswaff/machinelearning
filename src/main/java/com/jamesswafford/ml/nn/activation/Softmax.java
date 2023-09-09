@@ -3,6 +3,7 @@ package com.jamesswafford.ml.nn.activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 // this class is a work in progress.  the derivative function needs to be vectorized and tested, then
 // fit into the Activation interface somehow.  Perhaps changing the interface to use SimpleMatrix as input
