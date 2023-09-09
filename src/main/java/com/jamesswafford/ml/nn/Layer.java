@@ -113,7 +113,7 @@ public class Layer {
 
         // adjust the weights
         INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
-        dCdZ = dCdA.mul(dAdZ); // don't copy?
+        dCdZ = dCdA.mul(dAdZ);
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
