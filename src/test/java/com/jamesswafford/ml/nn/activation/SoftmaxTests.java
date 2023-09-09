@@ -1,7 +1,7 @@
 package com.jamesswafford.ml.nn.activation;
 
-import com.jamesswafford.ml.nn.util.MatrixUtil;
 import org.junit.jupiter.api.Test;
+import org.nd4j.common.util.ArrayUtil;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -30,7 +30,7 @@ public class SoftmaxTests {
         assertArrayEquals(
                 new double[] { .659001139, .09856589, 0.422318798,
                                .242432971, .242432971, 0.422318798,
-                               .09856589,  .659001139, 0.155362403 }, MatrixUtil.flatten(A.toDoubleMatrix(),3,3), epsilon);
+                               .09856589,  .659001139, 0.155362403 }, ArrayUtil.flatten(A.toDoubleMatrix()), epsilon);
 
     }
 
@@ -41,7 +41,7 @@ public class SoftmaxTests {
         INDArray Z = Nd4j.create(new double[] { 1.1, 2.2, 0.2, -1.7 }, new int[]{4,1});
         INDArray A = softmax.fn(Z);
 
-        assertArrayEquals(new double[] {.223636312,.67184061,.090923739,.013599338}, MatrixUtil.flatten(A.toDoubleMatrix(),4,1), epsilon);
+        assertArrayEquals(new double[] {.223636312,.67184061,.090923739,.013599338}, ArrayUtil.flatten(A.toDoubleMatrix()), epsilon);
     }
 
     // TODO: test cases for derivative (should yield matrix m x m)

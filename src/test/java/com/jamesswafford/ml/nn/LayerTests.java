@@ -3,10 +3,10 @@ package com.jamesswafford.ml.nn;
 import com.jamesswafford.ml.nn.activation.ActivationFunction;
 import com.jamesswafford.ml.nn.activation.Identity;
 import com.jamesswafford.ml.nn.activation.Tanh;
-import com.jamesswafford.ml.nn.util.MatrixUtil;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.nd4j.common.util.ArrayUtil;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -149,7 +149,7 @@ public class LayerTests {
              .1          .3         -.2
          */
         assertArrayEquals(new double[]{0,0,0,.2,.6,-.4,-.2,-.6,.4,.1,.3,-.2},
-                MatrixUtil.flatten(dCdW.toDoubleMatrix(), 4, 3), epsilon);
+                ArrayUtil.flatten(dCdW.toDoubleMatrix()), epsilon);
 
         // the delta to the bias is dC/dZ
         assertEquals(4, dCdb.rows());
@@ -163,7 +163,7 @@ public class LayerTests {
                 .9-.2*.5,.5-.6*.5,.65+.4*.5,
                 1.2+.2*.5,.2+.6*.5,-.3-.4*.5,
                 .15-.1*.5,.4-.3*.5,.4+.2*.5},
-                MatrixUtil.flatten(layer.getWeights().toDoubleMatrix(), 4, 3), epsilon);
+                ArrayUtil.flatten(layer.getWeights().toDoubleMatrix()), epsilon);
 
         assertArrayEquals(new double[]{
                 .05-0*.5,
@@ -219,7 +219,7 @@ public class LayerTests {
 
         assertEquals(4, dCdW.rows());
         assertEquals(3, dCdW.columns());
-        assertArrayEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},MatrixUtil.flatten(dCdW.toDoubleMatrix(),4,3), epsilon);
+        assertArrayEquals(new double[]{0,0,0,.1,.3,-.2,-.1,-.3,.2,.05,.15,-.1},ArrayUtil.flatten(dCdW.toDoubleMatrix()), epsilon);
 
         assertEquals(4, dCdb.rows());
         assertEquals(1, dCdb.columns());
@@ -231,7 +231,7 @@ public class LayerTests {
                 .5-0*.1 ,.3-0*.1, .1-0*.1,
                 .9-.1*.1,.5-.3*.1,.65+.2*.1,
                 1.2+.1*.1,.2+.3*.1,-.3-.2*.1,
-                .15-.05*.1,.4-.15*.1,.4+.1*.1}, MatrixUtil.flatten(layer.getWeights().toDoubleMatrix(),4,3), epsilon);
+                .15-.05*.1,.4-.15*.1,.4+.1*.1}, ArrayUtil.flatten(layer.getWeights().toDoubleMatrix()), epsilon);
 
         assertArrayEquals(new double[]{
                 .05-0*.1,
@@ -257,7 +257,7 @@ public class LayerTests {
         assertEquals(4, layer2.getNumUnits());
         assertEquals(Tanh.INSTANCE, layer.getActivationFunction());
         assertArrayEquals(new double[] {.5,.3,.1,.9,.5,.65,1.2,.2,-.3,.15,.4,.4},
-                MatrixUtil.flatten(layer2.getWeights().toDoubleMatrix(),4,3), epsilon);
+                ArrayUtil.flatten(layer2.getWeights().toDoubleMatrix()), epsilon);
         assertArrayEquals(new double[] {.05,.05,.05,.05}, layer2.getBiases().toDoubleVector(), epsilon);
     }
 
