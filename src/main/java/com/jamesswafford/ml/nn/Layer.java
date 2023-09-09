@@ -88,7 +88,7 @@ public class Layer {
         Z = w.mmul(X).addi(b);
         A = activationFunction.func(Z, true);
 
-        return new Pair<>(Z, A); // TODO: just return A
+        return new Pair<>(Z, A);
     }
 
     /**
@@ -112,14 +112,14 @@ public class Layer {
         int m = X.columns();
 
         // adjust the weights
-        INDArray dAdZ = activationFunction.derivativeFunc(Z, false);
+        INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
         dCdZ = dCdA.mul(dAdZ); // don't copy?
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
         dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
 
-        return new Pair<>(dCdW, dCdb); // TODO: don't really need a return
+        return new Pair<>(dCdW, dCdb);
     }
 
     /**
