@@ -48,9 +48,9 @@ public class Layer {
     }
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
-//        Nd4j.getRandom().setSeed(seed);
-//        w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
-//        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
+        /*Nd4j.getRandom().setSeed(seed);
+        w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
+        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);*/
         Random rand = new Random(seed);
         w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
         for (int r=0;r<numUnits;r++) {
