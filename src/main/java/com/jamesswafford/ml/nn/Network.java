@@ -60,7 +60,13 @@ public class Network {
      *
      * @return - the final network state
      */
-    public NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
+    public NetworkState train(double[][] X_train, double[][] Y_train, int numEpochs, int miniBatchSize, double learningRate,
+                              double[][] X_test, double[][] Y_test)
+    {
+        return train(new SimpleMatrix(X_train), new SimpleMatrix(Y_train), numEpochs, miniBatchSize, learningRate,
+                X_test==null ? null : new SimpleMatrix(X_test), Y_test==null ? null : new SimpleMatrix(Y_test));
+    }
+    private NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
                       SimpleMatrix X_test, SimpleMatrix Y_test)
     {
         int m = X_train.numCols(); // number of training samples
@@ -88,7 +94,16 @@ public class Network {
      *
      * @return - the final network state
      */
-    public NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
+    public NetworkState train(int numMiniBatches, Function<Integer, Pair<double[][], double[][]>> miniBatchFunc,
+                              int numEpochs, double learningRate, double[][] X_test, double[][] Y_test)
+    {
+        Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> mbf = (X) -> {
+                Pair<double[][],double[][]> p = miniBatchFunc.apply(X);
+                return new Pair<>(new SimpleMatrix(p.getValue0()), new SimpleMatrix(p.getValue1()));
+        };
+        return train(numMiniBatches, mbf, numEpochs, learningRate, new SimpleMatrix(X_test), new SimpleMatrix(Y_test));
+    }
+    private NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
         StopEvaluator stopEvaluator = new StopEvaluator(this, 10, null);
@@ -137,7 +152,10 @@ public class Network {
      * @param X - input matrix of shape n x m, where n is the number of features and m is the number of training examples
      * @return prediction matrix, of shape L x m, where L is the number of outputs and m is the number of training examples
      */
-    public SimpleMatrix predict(SimpleMatrix X) {
+    public double[][] predict(double[][] X) {
+        return matrix2Array(predict(new SimpleMatrix(X)));
+    }
+    private SimpleMatrix predict(SimpleMatrix X) {
 
         SimpleMatrix A = X;
         for (Layer layer : layers) {
@@ -155,7 +173,10 @@ public class Network {
      *
      * @return - the cost
      */
-    public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
+    public double cost(double[][] predictions, double[][] labels) {
+        return cost(new SimpleMatrix(predictions), new SimpleMatrix(labels));
+    }
+    private double cost(SimpleMatrix predictions, SimpleMatrix labels) {
         return costFunction.cost(predictions, labels);
     }
 
@@ -211,6 +232,16 @@ public class Network {
 
         // update the weights and biases
         layers.forEach(layer -> layer.updateWeightsAndBias(normalizedLearningRate));
+    }
+
+    private double[][] matrix2Array(SimpleMatrix matrix) {
+        double[][] array = new double[matrix.numRows()][matrix.numCols()];
+        for (int r = 0; r < matrix.numRows(); r++) {
+            for (int c = 0; c < matrix.numCols(); c++) {
+                array[r][c] = matrix.get(r, c);
+            }
+        }
+        return array;
     }
 
     @Data
