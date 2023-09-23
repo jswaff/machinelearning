@@ -95,6 +95,16 @@ public class Network {
      *
      * @return - the final network state
      */
+    public NetworkState train(int numMiniBatches, Function<Integer, Pair<double[][], double[][]>> miniBatchFunc,
+                              int numEpochs, double learningRate, double[][] X_test, double[][] Y_test)
+    {
+        Function<Integer, Pair<INDArray, INDArray>> mbf = (X) -> {
+            Pair<double[][],double[][]> p = miniBatchFunc.apply(X);
+            return new Pair<>(Nd4j.create(p.getValue0()), Nd4j.create(p.getValue1()));
+        };
+        return train(numMiniBatches, mbf, numEpochs, learningRate, Nd4j.create(X_test), Nd4j.create(Y_test));
+    }
+
     public NetworkState train(int numMiniBatches, Function<Integer, Pair<INDArray, INDArray>> miniBatchFunc,
                       int numEpochs, double learningRate, INDArray X_test, INDArray Y_test)
     {
