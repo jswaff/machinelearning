@@ -16,20 +16,15 @@ import java.util.stream.Collectors;
 
 import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 
+@Getter
 @RequiredArgsConstructor
 @Builder
 public class Network {
 
-    @Getter
-    @NonNull
     private final int numInputUnits;
 
-    @Getter
-    @NonNull
     private final List<Layer> layers;
 
-    @Getter
-    @NonNull
     private final CostFunction costFunction;
 
     /**
@@ -46,7 +41,6 @@ public class Network {
     /**
      * Train the network
      * Note- the network should already be initialized.
-     *
      * This method requires the training and test sets be loaded into memory, which is not very memory efficient
      * for large data sets.  For a more memory efficient alternative, see the other train() function which
      * uses a callback to retrieve one mini-batch at a time.
@@ -117,7 +111,7 @@ public class Network {
                 Pair<INDArray, INDArray> X_Y_batch = miniBatchFunc.apply(j);
                 INDArray X_batch = X_Y_batch.getValue0();
                 INDArray Y_batch = X_Y_batch.getValue1();
-                processMinibatch(X_batch, Y_batch, learningRate);
+                processMiniBatch(X_batch, Y_batch, learningRate);
             }
 
             // if we have test data, calculate the cost and evaluate if we should stop
@@ -206,7 +200,7 @@ public class Network {
         return fromState(state);
     }
 
-    private void processMinibatch(INDArray X_batch, INDArray Y_batch, double learningRate) {
+    private void processMiniBatch(INDArray X_batch, INDArray Y_batch, double learningRate) {
 
         // feed forward
         INDArray A = X_batch;
