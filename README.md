@@ -70,7 +70,6 @@ execution complete.  bye.
 ### To Do
 
 * regularization - L2, possibly drop out
-* abstract away the EJML (linear algebra library) stuff from the interface
 * softmax activation function
 * support for other cost functions, i.e. cross-entropy
 * support for other initializers, i.e. Xavier
