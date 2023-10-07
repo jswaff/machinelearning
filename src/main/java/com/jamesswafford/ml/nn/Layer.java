@@ -10,8 +10,6 @@ import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.Random;
-
 @RequiredArgsConstructor
 public class Layer {
 
@@ -48,16 +46,8 @@ public class Layer {
     }
 
     public void initialize(int numUnitsPreviousLayer, long seed) {
-        /*Nd4j.getRandom().setSeed(seed);
+        Nd4j.getRandom().setSeed(seed);
         w = Nd4j.rand(DataType.DOUBLE, numUnits, numUnitsPreviousLayer).subi(0.5);
-        b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);*/
-        Random rand = new Random(seed);
-        w = Nd4j.zeros(DataType.DOUBLE, numUnits, numUnitsPreviousLayer);
-        for (int r=0;r<numUnits;r++) {
-            for (int c=0;c<numUnitsPreviousLayer;c++) {
-                w.putScalar(r, c, rand.nextDouble()-0.5);
-            }
-        }
         b = Nd4j.zeros(DataType.DOUBLE, numUnits, 1);
     }
 
@@ -103,12 +93,10 @@ public class Layer {
 
     /**
      * Calculate the gradient of the cost function w.r.t. the weights and biases
-     *
-     *  By the chain rule in calculus, dC/dW = dZ/dW * dA/dZ * dC/dA
-     *  dZ/dW: how much the input to this layer changes as the weights change
-     *  dA/dZ: how much the output of this layer changes as the input changes
-     *  dC/dA: how much the total cost changes as the output of this layer changes
-     *
+     * By the chain rule in calculus, dC/dW = dZ/dW * dA/dZ * dC/dA
+     * dZ/dW: how much the input to this layer changes as the weights change
+     * dA/dZ: how much the output of this layer changes as the input changes
+     * dC/dA: how much the total cost changes as the output of this layer changes
      * Similarly, dC/db = dZ/db * dA/dZ * dC/dA
      * dz/db: This is just 1
      *
