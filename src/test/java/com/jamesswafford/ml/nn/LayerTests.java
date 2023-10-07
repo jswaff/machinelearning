@@ -11,7 +11,6 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class LayerTests {
 
@@ -251,7 +250,7 @@ public class LayerTests {
         assertEquals(3, state.getWeights()[0].length);
         assertArrayEquals(new double[][] {{.5,.3,.1},{.9,.5,.65},{1.2,.2,-.3},{.15,.4,.4}}, state.getWeights());
         assertEquals(4, state.getBiases().length);
-        assertArrayEquals(new double[] {.05,.05,.05,.05}, state.getBiases(), epsilon);
+        assertArrayEquals(new double[]{.05,.05,.05,.05}, ArrayUtil.flatten(state.getBiases()), epsilon);
 
         Layer layer2 = Layer.fromState(state);
         assertEquals(4, layer2.getNumUnits());

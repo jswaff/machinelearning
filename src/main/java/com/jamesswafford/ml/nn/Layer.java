@@ -97,12 +97,6 @@ public class Layer {
 
         Z = w.mmul(X).addi(b);
         A = activationFunction.func(Z, true);
-        /*A = Nd4j.create(DataType.DOUBLE, Z.rows(), Z.columns());
-        for (int r=0;r<Z.rows();r++) {
-            for (int c=0;c<Z.columns();c++) {
-                A.putScalar(r, c, activationFunction.func(Z.getDouble(r, c)));
-            }
-        }*/
 
         return new Pair<>(Z, A);
     }
@@ -129,26 +123,11 @@ public class Layer {
 
         // adjust the weights
         INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
-        /*INDArray dAdZ = Nd4j.create(Z.rows(), Z.columns());
-        for (int r=0;r<Z.rows();r++) {
-            for (int c=0;c<Z.columns();c++) {
-                dAdZ.putScalar(r, c, activationFunction.derivativeFunc(Z.getDouble(r, c)));
-            }
-        }*/
-
         dCdZ = dCdA.mul(dAdZ);
         dCdW = dCdZ.mmul(X.transpose()).divi(m);
 
         // adjust the biases
         dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
-        /*dCdb = Nd4j.create(b.rows(), 1);
-        for (int r=0;r<b.rows();r++) {
-            double dbVal = 0.0;
-            for (int c=0;c<dCdZ.columns();c++) {
-                dbVal += dCdZ.getDouble(r, c);
-            }
-            dCdb.putScalar(r, 0, dbVal / m);
-        }*/
 
         return new Pair<>(dCdW, dCdb);
     }
@@ -180,14 +159,14 @@ public class Layer {
         private int prevUnits;
         private String activationFunction;
         private double[][] weights;
-        private double[] biases;
+        private double[][] biases;
 
         public LayerState(Layer layer) {
             this.numUnits = layer.numUnits;
             this.prevUnits = layer.w.columns();
             this.activationFunction = layer.activationFunction.getName();
             this.weights = layer.w.toDoubleMatrix();
-            this.biases = layer.b.toDoubleVector();
+            this.biases = layer.b.toDoubleMatrix();
         }
     }
 }
