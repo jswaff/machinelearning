@@ -124,7 +124,6 @@ public class NetworkTests {
 
         assertDoubleEquals(1.10590597, output.getZ().get(0, 0));
         assertDoubleEquals(new double[]{ .75136507, .772928465 }, output.getA().getDDRM().getData());
-//        assertDoubleEquals(new double[]{ .75136507, .772928465 }, P);
 
         // test the initial cost
         double cost = network.cost(P, Y);
