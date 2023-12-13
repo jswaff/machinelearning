@@ -66,7 +66,7 @@ public class Network {
         return train(new SimpleMatrix(X_train), new SimpleMatrix(Y_train), numEpochs, miniBatchSize, learningRate,
                 X_test==null ? null : new SimpleMatrix(X_test), Y_test==null ? null : new SimpleMatrix(Y_test));
     }
-    private NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
+    public NetworkState train(SimpleMatrix X_train, SimpleMatrix Y_train, int numEpochs, int miniBatchSize, double learningRate,
                       SimpleMatrix X_test, SimpleMatrix Y_test)
     {
         int m = X_train.numCols(); // number of training samples
@@ -103,7 +103,7 @@ public class Network {
         };
         return train(numMiniBatches, mbf, numEpochs, learningRate, new SimpleMatrix(X_test), new SimpleMatrix(Y_test));
     }
-    private NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
+    public NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
         StopEvaluator stopEvaluator = new StopEvaluator(this, 10, null);
@@ -155,7 +155,7 @@ public class Network {
     public double[][] predict(double[][] X) {
         return matrix2Array(predict(new SimpleMatrix(X)));
     }
-    private SimpleMatrix predict(SimpleMatrix X) {
+    public SimpleMatrix predict(SimpleMatrix X) {
 
         SimpleMatrix A = X;
         for (Layer layer : layers) {
@@ -176,7 +176,7 @@ public class Network {
     public double cost(double[][] predictions, double[][] labels) {
         return cost(new SimpleMatrix(predictions), new SimpleMatrix(labels));
     }
-    private double cost(SimpleMatrix predictions, SimpleMatrix labels) {
+    public double cost(SimpleMatrix predictions, SimpleMatrix labels) {
         return costFunction.cost(predictions, labels);
     }
 
