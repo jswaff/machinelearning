@@ -85,7 +85,7 @@ public class Layer {
     public Pair<INDArray, INDArray> feedForward(INDArray X) {
         this.X = X;
 
-        Z = w.mmul(X).addi(b);
+        Z = w.mmul(X).add(b);
         A = activationFunction.func(Z, true);
 
         return new Pair<>(Z, A);
@@ -112,10 +112,10 @@ public class Layer {
         // adjust the weights
         INDArray dAdZ = activationFunction.derivativeFunc(Z, true);
         dCdZ = dCdA.mul(dAdZ);
-        dCdW = dCdZ.mmul(X.transpose()).divi(m);
+        dCdW = dCdZ.mmul(X.transpose()).div(m);
 
         // adjust the biases
-        dCdb = dCdZ.sum(1).reshape(b.rows(),1).divi(m);
+        dCdb = dCdZ.sum(1).reshape(b.rows(),1).div(m);
 
         return new Pair<>(dCdW, dCdb);
     }
