@@ -61,21 +61,21 @@ public class Layer {
 
     public SimpleMatrix getWeights() { return w; }
 
-    public Double getWeight(int unit, int prevUnit) {
+    public double getWeight(int unit, int prevUnit) {
         return w.get(unit, prevUnit);
     }
 
-    public void setWeight(int unit, int prevUnit, Double val) {
+    public void setWeight(int unit, int prevUnit, double val) {
         w.set(unit, prevUnit, val);
     }
 
     public SimpleMatrix getBiases() { return b; }
 
-    public Double getBias(int unit) {
+    public double getBias(int unit) {
         return b.get(unit, 0);
     }
 
-    public void setBias(int unit, Double val) {
+    public void setBias(int unit, double val) {
         b.set(unit, 0, val);
     }
 

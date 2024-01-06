@@ -13,12 +13,12 @@ public class Identity implements ActivationFunction {
     }
 
     @Override
-    public Double func(Double z) {
+    public double func(double z) {
         return z;
     }
 
     @Override
-    public Double derivativeFunc(Double a) {
+    public double derivativeFunc(double a) {
         return 1.0;
     }
 }
