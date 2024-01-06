@@ -1,12 +1,12 @@
 package com.jamesswafford.ml.nn.activation;
 
-// TODO: change interface so function is applied to a matrix
+// TODO: vectorized methods
 public interface ActivationFunction {
 
     String getName();
 
-    Double func(Double z);
+    double func(double z);
 
-    Double derivativeFunc(Double a);
+    double derivativeFunc(double a);
 
 }

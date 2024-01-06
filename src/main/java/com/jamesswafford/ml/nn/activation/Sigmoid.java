@@ -13,12 +13,12 @@ public class Sigmoid implements ActivationFunction {
     }
 
     @Override
-    public Double func(Double z) {
+    public double func(double z) {
         return 1.0 / (1 + Math.exp(-z));
     }
 
     @Override
-    public Double derivativeFunc(Double z) {
+    public double derivativeFunc(double z) {
         double x = func(z);
         return x * (1.0 - x);
     }

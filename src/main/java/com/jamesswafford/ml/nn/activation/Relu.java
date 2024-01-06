@@ -13,12 +13,12 @@ public class Relu implements ActivationFunction {
     }
 
     @Override
-    public Double func(Double z) {
+    public double func(double z) {
         return Math.max(z, 0.0);
     }
 
     @Override
-    public Double derivativeFunc(Double a) {
+    public double derivativeFunc(double a) {
         return a < 0.0 ? 0.0 : 1.0;
     }
 }

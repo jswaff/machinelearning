@@ -15,20 +15,13 @@ import java.util.stream.Collectors;
 
 import static com.jamesswafford.ml.nn.util.DataSplitter.getMiniBatch;
 
+@Getter
 @RequiredArgsConstructor
 @Builder
 public class Network {
 
-    @Getter
-    @NonNull
     private final int numInputUnits;
-
-    @Getter
-    @NonNull
     private final List<Layer> layers;
-
-    @Getter
-    @NonNull
     private final CostFunction costFunction;
 
     /**
@@ -106,7 +99,7 @@ public class Network {
     public NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
-        StopEvaluator stopEvaluator = new StopEvaluator(this, 10, null);
+        StopEvaluator stopEvaluator = new StopEvaluator(this, 10, 1E-3);
 
         for (int i=0;i<numEpochs;i++) {
 
