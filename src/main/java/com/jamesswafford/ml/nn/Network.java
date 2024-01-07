@@ -99,7 +99,7 @@ public class Network {
     public NetworkState train(int numMiniBatches, Function<Integer, Pair<SimpleMatrix, SimpleMatrix>> miniBatchFunc,
                       int numEpochs, double learningRate, SimpleMatrix X_test, SimpleMatrix Y_test)
     {
-        StopEvaluator stopEvaluator = new StopEvaluator(this, 10, 1E-3);
+        StopEvaluator stopEvaluator = new StopEvaluator(this, 10, 1E-4);
 
         for (int i=0;i<numEpochs;i++) {
 
